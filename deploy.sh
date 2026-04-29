@@ -843,7 +843,8 @@ import bcrypt
 password = '''${ADMIN_PASSWORD}'''
 hash_val = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 print(hash_val)
-")
+" 2>&1) || { log_error "Failed to hash password"; exit 1; }
+        [[ -z "${ADMIN_PASSWORD_HASH}" ]] && { log_error "Password hash is empty"; exit 1; }
         echo "ADMIN_PASSWORD=${ADMIN_PASSWORD_HASH}"
         echo "SESSION_TIMEOUT_MINUTES=60"
     } > "${DASHBOARD_HOME}/analytics.conf"
