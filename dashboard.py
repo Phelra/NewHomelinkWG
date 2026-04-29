@@ -52,7 +52,7 @@ from homelinkwg.utils import (
 )
 from homelinkwg.config import (
     CONFIG_FILE, ANALYTICS_CONFIG, RELEASE_NOTES_FILE,
-    SESSION_TIMEOUT_MINUTES, ADMIN_PASSWORD_HASH, TOTP_SECRET, TOTP_ENABLED,
+    SESSION_TIMEOUT_MINUTES, TOTP_SECRET, TOTP_ENABLED, get_admin_password_hash,
     LIGHT_TARGET_TTL_SECONDS, LIGHT_STATUS_CACHE_TTL_SECONDS,
     ULTRA_STATUS_CACHE_TTL_SECONDS, DEFAULT_STATUS_CACHE_TTL_SECONDS,
     _config_cache_lock, _config_cache, _analytics_cache,
@@ -2277,7 +2277,7 @@ def api_login():
     """Login: POST {password, totp_code?}. Returns session token or {requires_2fa:true}."""
     ip = request.remote_addr or "unknown"
 
-    if not ADMIN_PASSWORD_HASH:
+    if not get_admin_password_hash():
         return jsonify({"error": "auth not configured"}), 500
     if bcrypt is None:
         return jsonify({"error": "bcrypt not installed on server"}), 500
@@ -2302,7 +2302,7 @@ def api_login():
         }), 429
 
     # Verify password
-    if not verify_password(password, ADMIN_PASSWORD_HASH):
+    if not verify_password(password, get_admin_password_hash()):
         status = login_limiter.record_failure(ip)
         log_buffer.add("systemd", f"🔐 Login failed from {ip} ({status['remaining']} attempts left before lockout)")
         log_audit("login", ip, "dashboard", {}, "failed")
@@ -2415,7 +2415,7 @@ def api_change_password():
         return jsonify({"error": "current_password and new_password are required"}), 400
     if len(new_pw) < 8:
         return jsonify({"error": "New password must be at least 8 characters"}), 400
-    if not ADMIN_PASSWORD_HASH:
+    if not get_admin_password_hash():
         return jsonify({"error": "No password configured"}), 500
     if not verify_password(current, ADMIN_PASSWORD_HASH):
         log_audit("change_password", admin_ip, "dashboard", {}, "wrong_current_password")
