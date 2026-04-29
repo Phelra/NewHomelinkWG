@@ -17,6 +17,17 @@ container. Both expose the same Flask dashboard for live monitoring.
 - 💡 **Light/Ultra-light modes** for low-power hosts (Raspberry Pi, etc.)
 - 🐳 **Two deployment paths**: native systemd OR Docker — pick what fits
 
+## Documentation
+
+Comprehensive guides for different audiences:
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — System design, module interactions, performance characteristics (for developers/architects)
+- **[API.md](API.md)** — REST API reference, all endpoints with examples (for integrators)
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** — Common issues and solutions, debugging tools (for users/operators)
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** — Setup, testing, contributing guidelines (for developers)
+
+---
+
 ## Layout
 
 ```
