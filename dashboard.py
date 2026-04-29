@@ -2736,9 +2736,13 @@ def api_logs():
 @app.route("/api/metrics/export")
 @require_admin
 def api_metrics_export():
-    """Export all metrics as CSV. Optional params: days (int), port_id (str)."""
-    import csv
-    import io as _io
+    """Export all metrics as CSV. Optional params: days (int), port_id (str).
+
+    Phase 3C2: Stream CSV directly instead of loading all rows into memory.
+    This prevents memory spikes for large exports (e.g., 90 days = 100k+ rows).
+    """
+    import datetime
+
     days_param = request.args.get("days", "1")
     port_id_param = request.args.get("port_id", "")
     try:
@@ -2746,36 +2750,36 @@ def api_metrics_export():
     except ValueError:
         days = 1
     cutoff = int(time.time()) - days * 86400
-    try:
-        with _db_connect() as conn:
-            query = "SELECT timestamp, port_id, service_name, service_active, port_listening, target_reachable, latency_ms FROM metrics WHERE timestamp >= ?"
-            params: list = [cutoff]
-            if port_id_param:
-                query += " AND port_id = ?"
-                params.append(port_id_param)
-            query += " ORDER BY timestamp ASC"
-            rows = conn.execute(query, params).fetchall()
-    except sqlite3.Error as e:
-        return jsonify({"error": str(e)}), 500
 
-    buf = _io.StringIO()
-    writer = csv.writer(buf)
-    writer.writerow(["datetime_utc", "timestamp_unix", "port_id", "service_name",
-                     "service_active", "port_listening", "target_reachable", "latency_ms"])
-    import datetime
-    for row in rows:
-        ts, pid, sname, sactive, plisten, treach, lat = row
-        dt = datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
-        writer.writerow([dt, ts, pid, sname,
-                         "1" if sactive else "0",
-                         "1" if plisten else "0",
-                         "1" if treach else "0",
-                         lat if lat is not None else ""])
+    def generate_csv():
+        """Generator that yields CSV rows one at a time (streaming)."""
+        # Header row
+        yield "datetime_utc,timestamp_unix,port_id,service_name,service_active,port_listening,target_reachable,latency_ms\n"
+
+        # Stream metrics rows from database without loading all into memory
+        try:
+            with _db_connect() as conn:
+                query = "SELECT timestamp, port_id, service_name, service_active, port_listening, target_reachable, latency_ms FROM metrics WHERE timestamp >= ?"
+                params: list = [cutoff]
+                if port_id_param:
+                    query += " AND port_id = ?"
+                    params.append(port_id_param)
+                query += " ORDER BY timestamp ASC"
+
+                # Cursor iteration: rows are fetched incrementally from database
+                cursor = conn.execute(query, params)
+                for row in cursor:
+                    ts, pid, sname, sactive, plisten, treach, lat = row
+                    dt = datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+                    # Format as CSV string directly
+                    csv_line = f"{dt},{ts},{pid},{sname},{'1' if sactive else '0'},{'1' if plisten else '0'},{'1' if treach else '0'},{lat if lat is not None else ''}\n"
+                    yield csv_line
+        except sqlite3.Error as e:
+            yield f"error,{e}\n"
 
     fname = f"homelinkwg-metrics-{days}d.csv"
-    from flask import Response
     return Response(
-        buf.getvalue(),
+        generate_csv(),
         mimetype="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{fname}"'}
     )
