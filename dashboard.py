@@ -28,7 +28,6 @@ from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
 from typing import Any
-import secrets
 
 try:
     import bcrypt  # type: ignore
@@ -63,6 +62,10 @@ from homelinkwg.config import (
     adaptive_ultra_light_status, status_refresh_ms, analytics_refresh_ms,
     init_db, SCRIPT_DIR
 )
+from homelinkwg.auth import (
+    hash_password, verify_password, create_session, verify_session,
+    log_audit, _write_analytics_conf_key
+)
 
 __version__ = "5.0"
 __date__ = "2026-04-28"
@@ -73,98 +76,6 @@ api_limiter = RateLimiter(max_attempts=100, window_seconds=60)
 
 # Track previous state for each port (to detect changes)
 service_state_cache = {}  # port_id -> {service_active, port_listening, target_reachable, latency_ms}
-
-# These functions will be moved to auth.py in Phase 1C
-def hash_password(password: str) -> str:
-    """Hash password using bcrypt."""
-    if bcrypt is None:
-        raise RuntimeError("bcrypt module missing")
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-
-def verify_password(password: str, hash_str: str) -> bool:
-    """Verify password against hash."""
-    if bcrypt is None:
-        return False
-    try:
-        return bcrypt.checkpw(password.encode(), hash_str.encode())
-    except (ValueError, TypeError):
-        return False
-
-def create_session(ip_address: str, user_agent: str) -> str:
-    """Create admin session and return token."""
-    token = secrets.token_urlsafe(32)
-    now = _now_ts()
-    expires_at = now + (SESSION_TIMEOUT_MINUTES * 60)
-
-    try:
-        with _db_connect() as conn:
-            conn.execute("DELETE FROM admin_sessions WHERE expires_at <= ?", (now,))
-            conn.execute(
-                """
-                INSERT INTO admin_sessions (token, created_at, expires_at, ip_address, user_agent)
-                VALUES (?, ?, ?, ?, ?)
-                """,
-                (token, now, expires_at, ip_address, user_agent),
-            )
-    except sqlite3.Error as e:
-        print(f"[homelinkwg-dashboard] session creation error: {e}", file=sys.stderr)
-        return ""
-
-    return token
-
-def verify_session(token: str) -> bool:
-    """Verify if session token is valid and not expired."""
-    if not token:
-        return False
-
-    try:
-        now = _now_ts()
-        with _db_connect() as conn:
-            conn.execute("DELETE FROM admin_sessions WHERE expires_at <= ?", (now,))
-            result = conn.execute(
-                """
-                SELECT expires_at FROM admin_sessions
-                WHERE token = ? AND expires_at > ?
-                """,
-                (token, now),
-            ).fetchone()
-        return bool(result)
-    except sqlite3.Error:
-        return False
-
-def _write_analytics_conf_key(key: str, value: str) -> None:
-    """Update or append a single key=value in analytics.conf (thread-safe best-effort)."""
-    try:
-        text = ANALYTICS_CONFIG.read_text(encoding="utf-8") if ANALYTICS_CONFIG.exists() else ""
-        lines = text.splitlines()
-        found = False
-        new_lines = []
-        for line in lines:
-            if line.startswith(f"{key}="):
-                new_lines.append(f"{key}={value}")
-                found = True
-            else:
-                new_lines.append(line)
-        if not found:
-            new_lines.append(f"{key}={value}")
-        ANALYTICS_CONFIG.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
-    except OSError as exc:
-        print(f"[homelinkwg-dashboard] analytics.conf write error: {exc}", file=sys.stderr)
-
-
-def log_audit(action: str, admin_ip: str, target: str, details: dict, status: str) -> None:
-    """Log administrative action to audit_log table."""
-    try:
-        with _db_connect() as conn:
-            conn.execute(
-                """
-                INSERT INTO audit_log (timestamp, action, admin, target, details, status)
-                VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                (_now_ts(), action, admin_ip, target, json.dumps(details), status),
-            )
-    except sqlite3.Error as e:
-        print(f"[homelinkwg-dashboard] audit log error: {e}", file=sys.stderr)
 
 # ---------------------------------------------------------------------------
 # Flask import guard
