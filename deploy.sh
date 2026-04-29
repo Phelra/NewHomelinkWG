@@ -121,8 +121,8 @@ generate_admin_password() {
 }
 
 print_secret() {
-    # Print secrets to the console without appending to /var/log/homelinkwg-deploy.log
-    printf '%s\n' "$*"
+    # Print secrets to stderr (not stdout) to avoid them being redirected into config files
+    printf '%s\n' "$*" >&2
 }
 
 json_get() {
