@@ -1,0 +1,91 @@
+:root{
+  --bg:#07080f;
+  --surface:#0b0d18;
+  --card:#0f1120;
+  --card-2:#0c0e1a;
+  --border:rgba(148,163,184,.07);
+  --border-2:rgba(148,163,184,.13);
+  --accent:#10b981;
+  --accent-2:#34d399;
+  --accent-glow:rgba(16,185,129,.18);
+  --purple:#8b5cf6;
+  --purple-dim:rgba(139,92,246,.14);
+  --amber:#f59e0b;
+  --danger:#f43f5e;
+  --danger-dim:rgba(244,63,94,.12);
+  --ok-bg:rgba(16,185,129,.09);
+  --neutral-bg:rgba(148,163,184,.05);
+  --text:#e2e8f0;
+  --text-2:#8892a4;
+  --text-3:#3d4a5c;
+  --r:12px;
+  --r-sm:7px;
+  --r-lg:18px;
+}
+
+/* ── Light theme variables ─────────────────────────────────────────────── */
+.light-theme{
+  --bg:#f1f5f9;
+  --surface:#ffffff;
+  --card:#f8fafc;
+  --card-2:#f0f4f8;
+  --border:rgba(0,0,0,.08);
+  --border-2:rgba(0,0,0,.13);
+  --accent:#059669;
+  --accent-2:#047857;
+  --accent-glow:rgba(5,150,105,.14);
+  --purple:#7c3aed;
+  --purple-dim:rgba(124,58,237,.12);
+  --amber:#d97706;
+  --danger:#e11d48;
+  --danger-dim:rgba(225,29,72,.10);
+  --ok-bg:rgba(5,150,105,.09);
+  --neutral-bg:rgba(0,0,0,.04);
+  --text:#0f172a;
+  --text-2:#475569;
+  --text-3:#94a3b8;
+}
+@media(prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --bg:#f1f5f9;
+    --surface:#ffffff;
+    --card:#f8fafc;
+    --card-2:#f0f4f8;
+    --border:rgba(0,0,0,.08);
+    --border-2:rgba(0,0,0,.13);
+    --accent:#059669;
+    --accent-2:#047857;
+    --accent-glow:rgba(5,150,105,.14);
+    --purple:#7c3aed;
+    --purple-dim:rgba(124,58,237,.12);
+    --amber:#d97706;
+    --danger:#e11d48;
+    --danger-dim:rgba(225,29,72,.10);
+    --ok-bg:rgba(5,150,105,.09);
+    --neutral-bg:rgba(0,0,0,.04);
+    --text:#0f172a;
+    --text-2:#475569;
+    --text-3:#94a3b8;
+  }
+}
+[data-theme="light"]{
+  --bg:#f1f5f9;
+  --surface:#ffffff;
+  --card:#f8fafc;
+  --card-2:#f0f4f8;
+  --border:rgba(0,0,0,.08);
+  --border-2:rgba(0,0,0,.13);
+  --accent:#059669;
+  --accent-2:#047857;
+  --accent-glow:rgba(5,150,105,.14);
+  --purple:#7c3aed;
+  --purple-dim:rgba(124,58,237,.12);
+  --amber:#d97706;
+  --danger:#e11d48;
+  --danger-dim:rgba(225,29,72,.10);
+  --ok-bg:rgba(5,150,105,.09);
+  --neutral-bg:rgba(0,0,0,.04);
+  --text:#0f172a;
+  --text-2:#475569;
+  --text-3:#94a3b8;
+}

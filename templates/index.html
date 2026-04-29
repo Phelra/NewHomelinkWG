@@ -1,0 +1,3731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HomelinkWG</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.ico">
+<style>
+:root{
+  --bg:#07080f;
+  --surface:#0b0d18;
+  --card:#0f1120;
+  --card-2:#0c0e1a;
+  --border:rgba(148,163,184,.07);
+  --border-2:rgba(148,163,184,.13);
+  --accent:#10b981;
+  --accent-2:#34d399;
+  --accent-glow:rgba(16,185,129,.18);
+  --purple:#8b5cf6;
+  --purple-dim:rgba(139,92,246,.14);
+  --amber:#f59e0b;
+  --danger:#f43f5e;
+  --danger-dim:rgba(244,63,94,.12);
+  --ok-bg:rgba(16,185,129,.09);
+  --neutral-bg:rgba(148,163,184,.05);
+  --text:#e2e8f0;
+  --text-2:#8892a4;
+  --text-3:#3d4a5c;
+  --r:12px;
+  --r-sm:7px;
+  --r-lg:18px;
+}
+
+/* ── Light theme variables ─────────────────────────────────────────────── */
+.light-theme{
+  --bg:#f1f5f9;
+  --surface:#ffffff;
+  --card:#f8fafc;
+  --card-2:#f0f4f8;
+  --border:rgba(0,0,0,.08);
+  --border-2:rgba(0,0,0,.13);
+  --accent:#059669;
+  --accent-2:#047857;
+  --accent-glow:rgba(5,150,105,.14);
+  --purple:#7c3aed;
+  --purple-dim:rgba(124,58,237,.12);
+  --amber:#d97706;
+  --danger:#e11d48;
+  --danger-dim:rgba(225,29,72,.10);
+  --ok-bg:rgba(5,150,105,.09);
+  --neutral-bg:rgba(0,0,0,.04);
+  --text:#0f172a;
+  --text-2:#475569;
+  --text-3:#94a3b8;
+}
+@media(prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --bg:#f1f5f9;
+    --surface:#ffffff;
+    --card:#f8fafc;
+    --card-2:#f0f4f8;
+    --border:rgba(0,0,0,.08);
+    --border-2:rgba(0,0,0,.13);
+    --accent:#059669;
+    --accent-2:#047857;
+    --accent-glow:rgba(5,150,105,.14);
+    --purple:#7c3aed;
+    --purple-dim:rgba(124,58,237,.12);
+    --amber:#d97706;
+    --danger:#e11d48;
+    --danger-dim:rgba(225,29,72,.10);
+    --ok-bg:rgba(5,150,105,.09);
+    --neutral-bg:rgba(0,0,0,.04);
+    --text:#0f172a;
+    --text-2:#475569;
+    --text-3:#94a3b8;
+  }
+}
+[data-theme="light"]{
+  --bg:#f1f5f9;
+  --surface:#ffffff;
+  --card:#f8fafc;
+  --card-2:#f0f4f8;
+  --border:rgba(0,0,0,.08);
+  --border-2:rgba(0,0,0,.13);
+  --accent:#059669;
+  --accent-2:#047857;
+  --accent-glow:rgba(5,150,105,.14);
+  --purple:#7c3aed;
+  --purple-dim:rgba(124,58,237,.12);
+  --amber:#d97706;
+  --danger:#e11d48;
+  --danger-dim:rgba(225,29,72,.10);
+  --ok-bg:rgba(5,150,105,.09);
+  --neutral-bg:rgba(0,0,0,.04);
+  --text:#0f172a;
+  --text-2:#475569;
+  --text-3:#94a3b8;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 10% 0%,rgba(16,185,129,.05) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 30% at 90% 100%,rgba(139,92,246,.04) 0%,transparent 60%);
+  pointer-events:none;
+  z-index:0;
+}
+
+.container{max-width:1440px;margin:0 auto;padding:0 24px 40px;position:relative;z-index:1}
+
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:18px 0;
+  border-bottom:1px solid var(--border);
+  margin-bottom:28px;
+  flex-wrap:wrap;
+}
+.header-brand{display:flex;align-items:center;gap:14px}
+.logo{height:36px;width:auto;display:block;filter:drop-shadow(0 0 12px rgba(16,185,129,.4))}
+.brand-name{font-size:1.05rem;font-weight:700;letter-spacing:.08em;color:var(--text)}
+.brand-sub{font-size:.72rem;color:var(--text-3);letter-spacing:.04em;margin-top:2px}
+
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+.update-chip{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:4px 10px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:999px;
+  font-size:.75rem;
+  color:var(--text-2);
+}
+#last-update{font-variant-numeric:tabular-nums}
+
+.link-btn{
+  border:none;
+  background:transparent;
+  color:var(--accent-2);
+  cursor:pointer;
+  font-size:.78rem;
+  font-weight:600;
+  padding:0;
+  line-height:1;
+  font-family:inherit;
+  transition:color .15s;
+}
+.link-btn:hover{color:var(--accent)}
+
+.mode-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:.7rem;
+  font-weight:600;
+  letter-spacing:.06em;
+  border:1px solid transparent;
+}
+.mode-badge.admin{background:var(--purple-dim);color:#c4b5fd;border-color:rgba(139,92,246,.3)}
+.mode-badge.public{background:var(--neutral-bg);color:var(--text-2);border-color:var(--border-2)}
+.mode-badge.light{background:var(--ok-bg);color:var(--accent-2);border-color:rgba(16,185,129,.25)}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 14px;
+  border:none;
+  border-radius:var(--r-sm);
+  font-weight:600;
+  font-size:.78rem;
+  cursor:pointer;
+  font-family:inherit;
+  transition:opacity .15s,transform .1s;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);color:#042d1e}
+.btn-primary:hover{opacity:.88}
+.btn-danger{background:rgba(244,63,94,.14);color:#fb7185;border:1px solid rgba(244,63,94,.25)}
+.btn-danger:hover{background:rgba(244,63,94,.22)}
+
+.icon-btn{
+  width:34px;height:34px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--border-2);
+  background:var(--surface);
+  color:var(--text-2);
+  border-radius:var(--r-sm);
+  cursor:pointer;
+  transition:border-color .15s,color .15s;
+}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent-2)}
+
+#alert,#mute-banner{margin-bottom:16px}
+.alert-strip{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 18px;
+  border-radius:var(--r-sm);
+  font-size:.85rem;
+  font-weight:500;
+}
+.alert-strip.danger{background:var(--danger-dim);border:1px solid rgba(244,63,94,.3);color:#fda4af}
+.alert-strip.muted{background:var(--neutral-bg);border:1px solid var(--border-2);color:var(--text-2)}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
+  gap:14px;
+  margin-bottom:14px;
+}
+.full{grid-column:1/-1}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:20px;
+  transition:border-color .2s;
+}
+.card:hover{border-color:var(--border-2)}
+.card-header{
+  display:flex;align-items:center;gap:8px;
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--text-3);
+  margin-bottom:18px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
+.card-header svg{flex-shrink:0;opacity:.7}
+.card h2{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:9px 0;
+  border-bottom:1px solid var(--border);
+}
+.row:last-child{border-bottom:none}
+.label{font-size:.82rem;color:var(--text-2)}
+.value{font-size:.88rem;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot.ok{background:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,.2);animation:pulse 2.4s ease-in-out infinite}
+.dot.ko{background:var(--text-3)}
+
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 3px rgba(16,185,129,.2)}
+  50%{box-shadow:0 0 0 5px rgba(16,185,129,.06)}
+}
+
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 9px;
+  border-radius:999px;
+  font-size:.7rem;font-weight:600;
+  letter-spacing:.04em;
+  border:1px solid transparent;
+}
+.badge.ok{background:var(--ok-bg);color:var(--accent-2);border-color:rgba(16,185,129,.2)}
+.badge.ko{background:var(--danger-dim);color:#fda4af;border-color:rgba(244,63,94,.2)}
+.badge.muted{background:var(--neutral-bg);color:var(--text-2);border-color:var(--border-2)}
+
+.diag{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.diag .cell{padding:12px 14px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--text-3)}
+.diag .cell.ok{background:rgba(16,185,129,.05);border-left-color:var(--accent)}
+.diag .cell .k{font-size:.72rem;color:var(--text-3);font-weight:500;margin-bottom:4px}
+.diag .cell .v{font-size:.88rem;font-weight:600;color:var(--text)}
+
+.modal{
+  display:none;
+  position:fixed;inset:0;
+  z-index:3000;
+  background:rgba(4,5,12,.75);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  align-items:center;
+  justify-content:center;
+}
+.modal.show{display:flex}
+.modal-content{
+  background:var(--card);
+  border:1px solid var(--border-2);
+  border-radius:var(--r-lg);
+  padding:28px;
+  max-width:420px;
+  width:92%;
+  box-shadow:0 30px 70px rgba(0,0,0,.7);
+  animation:modal-in .2s ease;
+}
+.modal-content.wide{max-width:min(1200px,95vw);width:95%;max-height:90vh;overflow-y:auto}
+@keyframes modal-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+
+.modal-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:20px}
+.modal-input{
+  width:100%;padding:11px 14px;
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:var(--r-sm);
+  color:var(--text);font-size:.9rem;font-family:inherit;
+  margin-bottom:14px;outline:none;
+  transition:border-color .15s;
+}
+.modal-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,.12)}
+.modal-buttons{display:flex;gap:8px;justify-content:flex-end}
+.modal-btn{
+  padding:9px 18px;border:none;
+  border-radius:var(--r-sm);
+  font-weight:600;cursor:pointer;font-size:.85rem;font-family:inherit;
+}
+.modal-btn.cancel{background:var(--surface);border:1px solid var(--border-2);color:var(--text-2)}
+.modal-btn.submit{background:var(--accent);color:#042d1e}
+.modal-error{
+  color:#fda4af;font-size:.82rem;
+  margin-bottom:10px;padding:8px 12px;
+  background:var(--danger-dim);
+  border-radius:var(--r-sm);display:none;
+}
+
+.settings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.settings-section{margin-top:20px;padding-top:18px;border-top:1px solid var(--border)}
+.settings-label{
+  font-size:.72rem;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:12px;
+}
+.range-row{display:flex;gap:10px;align-items:center}
+.range-row input[type="range"]{flex:1;max-width:180px}
+.range-row input[type="number"]{
+  width:68px;padding:6px 8px;
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:var(--r-sm);
+  color:var(--text);font-size:.85rem;
+  text-align:center;font-family:inherit;
+  outline:none;
+}
+.range-hint{font-size:.75rem;color:var(--text-3);margin-top:6px}
+
+input[type="range"]{
+  -webkit-appearance:none;
+  height:4px;background:var(--border-2);
+  border-radius:999px;outline:none;cursor:pointer;
+  accent-color:var(--accent);
+}
+input[type="range"]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:999px}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--accent);margin-top:-5px;
+  box-shadow:0 0 0 3px rgba(16,185,129,.15);
+}
+input[type="range"]::-moz-range-track{height:4px;background:transparent;border-radius:999px}
+input[type="range"]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--accent);border:none}
+
+.maint-btns{display:flex;gap:8px;flex-wrap:wrap}
+.maint-btn{
+  padding:7px 13px;
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  color:var(--text-2);
+  border-radius:var(--r-sm);
+  cursor:pointer;font-size:.8rem;font-family:inherit;
+  transition:border-color .15s,color .15s;
+}
+.maint-btn:hover{border-color:var(--accent);color:var(--accent-2)}
+.maint-btn.unmute{border-color:rgba(16,185,129,.3);color:var(--accent-2)}
+
+.section-row{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:28px 0 14px;
+  flex-wrap:wrap;
+}
+.section-heading{
+  font-size:.72rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);
+}
+
+.timeframe-group{display:flex;gap:4px}
+.timeframe-btn{
+  padding:5px 11px;
+  border:1px solid var(--border-2);
+  background:transparent;
+  color:var(--text-2);
+  border-radius:var(--r-sm);
+  cursor:pointer;font-size:.78rem;font-weight:500;font-family:inherit;
+  transition:all .15s;
+}
+.timeframe-btn:hover{border-color:var(--accent-2);color:var(--accent-2)}
+.timeframe-btn.active,
+.timeframe-btn[style*="background:var(--accent)"]{
+  background:var(--accent) !important;
+  border-color:var(--accent) !important;
+  color:#042d1e !important;font-weight:700 !important;
+}
+
+.logs-grid{
+  display:grid;
+  grid-template-columns:280px 1fr;
+  gap:20px;
+}
+.section-title{
+  font-size:.72rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:12px;
+}
+
+.log-controls{
+  display:flex;align-items:center;
+  justify-content:space-between;gap:10px;
+  margin-bottom:10px;flex-wrap:wrap;
+}
+.log-filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.log-filter{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:.75rem;color:var(--text-2);cursor:pointer;user-select:none;
+}
+.log-filter input[type="checkbox"]{accent-color:var(--accent);cursor:pointer}
+.log-actions{display:flex;gap:6px}
+.log-btn{
+  padding:5px 10px;font-size:.75rem;
+  border:1px solid var(--border-2);
+  background:var(--surface);
+  color:var(--text-2);
+  border-radius:var(--r-sm);cursor:pointer;font-family:inherit;
+  transition:border-color .15s,color .15s;
+}
+.log-btn:hover{border-color:var(--accent);color:var(--accent-2)}
+.log-btn.danger:hover{border-color:var(--danger);color:#fda4af}
+.log-search{
+  padding:5px 10px;
+  background:var(--surface);
+  border:1px solid var(--border-2);
+  border-radius:var(--r-sm);
+  color:var(--text);font-size:.78rem;font-family:inherit;
+  width:160px;outline:none;
+  transition:border-color .15s;
+}
+.log-search:focus{border-color:var(--accent)}
+
+#logs-stream{
+  max-height:320px;overflow-y:auto;
+  font-size:.78rem;
+  font-family:'JetBrains Mono','SF Mono','Cascadia Code','Fira Code',monospace;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  padding:12px 14px;color:var(--text-2);line-height:1.6;
+}
+#logs-stream::-webkit-scrollbar{width:4px}
+#logs-stream::-webkit-scrollbar-track{background:transparent}
+#logs-stream::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:2px}
+#incidents-list{max-height:320px;overflow-y:auto}
+#incidents-list::-webkit-scrollbar{width:4px}
+#incidents-list::-webkit-scrollbar-track{background:transparent}
+#incidents-list::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:2px}
+
+.service-analytics{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:20px;margin-bottom:12px;
+  transition:border-color .2s;
+}
+.service-analytics:hover{border-color:var(--border-2)}
+.service-analytics h3{
+  font-size:.95rem;font-weight:700;
+  color:var(--text);margin-bottom:4px;
+  display:flex;align-items:center;gap:8px;
+}
+.service-desc{font-size:.78rem;color:var(--text-3);margin-bottom:14px}
+
+.toggle-bar{
+  display:flex;align-items:center;
+  justify-content:space-between;gap:10px;
+  padding:10px 14px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  cursor:pointer;margin-bottom:14px;
+  transition:border-color .15s;
+}
+.toggle-bar:hover{border-color:var(--border-2)}
+
+.loader-overlay{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9000;
+  transition:opacity .4s ease;
+}
+.loader-overlay.hidden{opacity:0;pointer-events:none}
+.loader-logo{
+  height:120px;width:auto;
+  filter:drop-shadow(0 0 20px rgba(16,185,129,.5));
+  animation:breathe 2.4s ease-in-out infinite;
+}
+@keyframes breathe{
+  0%,100%{transform:scale(1);filter:drop-shadow(0 0 16px rgba(16,185,129,.4))}
+  50%{transform:scale(1.1);filter:drop-shadow(0 0 30px rgba(16,185,129,.75))}
+}
+
+.foot{
+  text-align:center;font-size:.72rem;color:var(--text-3);
+  padding:20px 0 0;border-top:1px solid var(--border);margin-top:16px;
+}
+.foot a{color:var(--accent-2);text-decoration:none}
+.foot a:hover{color:var(--accent)}
+
+@media(max-width:900px){
+  .logs-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .container{padding:0 16px 32px}
+  header{padding:14px 0}
+  .grid{grid-template-columns:1fr !important}
+  body{font-size:14px}
+  .modal-content.wide{max-width:96vw;padding-left:20px;padding-right:20px}
+  .settings-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .container{padding:0 12px 24px}
+  .header-right{gap:6px}
+  .btn{padding:6px 10px;font-size:.72rem}
+  .card{padding:14px}
+  .timeframe-group{gap:2px}
+  .timeframe-btn{padding:4px 8px;font-size:.72rem}
+}
+@media(hover:none) and (pointer:coarse){
+  .btn,.icon-btn,.maint-btn,.log-btn,.modal-btn{min-height:44px}
+  .modal-input{min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+}
+body.light .dot.ok{animation:none;box-shadow:none}
+
+/* ── TABS ── */
+.tab-nav{
+  display:flex;gap:0;
+  border-bottom:1px solid var(--border);
+  margin-bottom:24px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn-nav{
+  padding:10px 18px;
+  background:transparent;border:none;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  color:var(--text-3);
+  font-size:.78rem;font-weight:600;
+  letter-spacing:.05em;cursor:pointer;
+  font-family:inherit;white-space:nowrap;
+  transition:color .15s,border-color .15s;
+}
+.tab-btn-nav:hover{color:var(--text-2)}
+.tab-btn-nav.active{color:var(--accent-2);border-bottom-color:var(--accent)}
+
+/* ── RESPONSIVE TEXT FIXES ── */
+.row{min-width:0;gap:8px}
+.label{flex-shrink:0;min-width:0}
+.value{min-width:0;max-width:60%;justify-content:flex-end;flex-wrap:wrap;word-break:break-all}
+.value[id]{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-header{min-width:0}
+.brand-name,.brand-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-brand{min-width:0;flex-shrink:1;overflow:hidden}
+@media(max-width:520px){
+  .update-chip{display:none}
+  .brand-sub{display:none}
+  .tab-btn-nav{padding:8px 12px;font-size:.72rem}
+}
+@media(max-width:380px){
+  .mode-badge{display:none}
+}
+
+</style>
+</head>
+<body>
+
+<div id="loader-overlay" class="loader-overlay">
+  <div><img src="/images/web_logo.png" alt="" class="loader-logo"></div>
+</div>
+
+<div class="container">
+
+  <header>
+    <div class="header-brand">
+      <img src="/images/web_logo.png" alt="HomelinkWG" class="logo">
+      <div>
+        <div class="brand-name">HomelinkWG</div>
+        <div class="brand-sub">VPN &amp; Port Monitor</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="update-chip">
+        <span id="last-update">loading…</span>
+        <button class="link-btn" id="whatsnew-btn" onclick="openWhatsNew()" title="Release notes">v{{ version }}</button>
+      </div>
+      <span class="mode-badge light" id="light-badge" style="display:none" title="Mode allégé actif">&#9889; LIGHT</span>
+      <span class="mode-badge light" id="ultra-badge" style="display:none;background:#7c2d12;border-color:#9a3412;color:#fed7aa" title="Mode ultra-light: rafraîchissement 30s, diagnostics réduits">&#128293; ULTRA</span>
+      <span class="mode-badge public" id="mode-badge">PUBLIC</span>
+      <button class="icon-btn" id="theme-toggle-btn" onclick="cycleTheme()" aria-label="Toggle theme" title="Theme (auto/light/dark)">
+        <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="icon-btn admin-only" id="settings-btn" onclick="openSettingsModal()" style="display:none" aria-label="Settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <button class="btn btn-primary" id="login-btn" onclick="showLoginModal()">Login</button>
+      <button class="btn btn-danger" id="logout-btn" onclick="logout()" style="display:none">Logout</button>
+    </div>
+  </header>
+
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title">Admin Login</div>
+      <div class="modal-error" id="login-error"></div>
+      <input type="password" id="password-input" class="modal-input" placeholder="Password" onkeypress="if(event.key==='Enter') submitLogin()" autocomplete="current-password">
+      <div id="totp-section" style="display:none">
+        <input type="text" id="totp-input" class="modal-input" placeholder="6-digit authenticator code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" onkeypress="if(event.key==='Enter') submitLogin()">
+      </div>
+      <div id="login-attempts" style="font-size:.78rem;color:var(--amber);margin-bottom:10px;display:none"></div>
+      <div id="login-lockout" style="font-size:.82rem;color:var(--danger);text-align:center;padding:10px;background:var(--danger-dim);border-radius:var(--r-sm);margin-bottom:10px;display:none"></div>
+      <div class="modal-buttons">
+        <button class="modal-btn cancel" onclick="closeLoginModal()">Cancel</button>
+        <button class="modal-btn submit" id="login-submit-btn" onclick="submitLogin()">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="whatsnew-modal" class="modal">
+    <div class="modal-content wide">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div class="modal-title" style="margin:0">What&#39;s new</div>
+        <button class="icon-btn" onclick="closeWhatsNew()" aria-label="Close">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="whatsnew-subtitle" style="font-size:.75rem;color:var(--text-3);margin-bottom:14px"></div>
+      <pre id="whatsnew-content" style="white-space:pre-wrap;font-family:'JetBrains Mono','SF Mono',monospace;font-size:.78rem;line-height:1.7;color:var(--text-2);background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;max-height:440px;overflow:auto;margin:0"></pre>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="modal admin-only">
+    <div class="modal-content wide">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div class="modal-title" style="margin:0">Settings</div>
+        <button class="icon-btn" onclick="closeSettingsModal()" aria-label="Close">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="settings-grid">
+        <div>
+          <div class="settings-label">Latency Threshold</div>
+          <div class="range-row">
+            <input type="range" id="latency-slider" min="1" max="500" step="1">
+            <input type="number" id="latency-input" min="1" max="500">
+            <span style="font-size:.75rem;color:var(--text-3)">ms</span>
+          </div>
+          <div class="range-hint">Alert when latency exceeds this value</div>
+        </div>
+        <div>
+          <div class="settings-label">Uptime Threshold</div>
+          <div class="range-row">
+            <input type="range" id="uptime-slider" min="50" max="100" step="0.5">
+            <input type="number" id="uptime-input" min="50" max="100" step="0.5">
+            <span style="font-size:.75rem;color:var(--text-3)">%</span>
+          </div>
+          <div class="range-hint">Alert when uptime falls below this percentage</div>
+        </div>
+        <div>
+          <div class="settings-label">Session Timeout</div>
+          <div class="range-row">
+            <input type="range" id="timeout-slider" min="5" max="240" step="5">
+            <input type="number" id="timeout-input" min="5" max="240" step="5">
+            <span style="font-size:.75rem;color:var(--text-3)">min</span>
+          </div>
+          <div class="range-hint">Auto-logout after inactivity</div>
+        </div>
+      </div>
+      <div style="margin-top:18px;display:flex;align-items:center;gap:12px">
+        <button onclick="saveThresholds()" class="btn btn-primary">Save</button>
+        <span id="settings-message" style="font-size:.82rem;color:var(--accent-2);display:none"></span>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Maintenance Window</div>
+        <div class="maint-btns">
+          <button onclick="muteAlerts('1h')" class="maint-btn">Mute 1h</button>
+          <button onclick="muteAlerts('4h')" class="maint-btn">Mute 4h</button>
+          <button onclick="muteAlerts('tomorrow')" class="maint-btn">Until Tomorrow</button>
+          <button onclick="unmuteAlerts()" class="maint-btn unmute">Unmute</button>
+        </div>
+        <div id="maintenance-msg" style="margin-top:8px;font-size:.78rem;color:var(--text-2)"></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Mode de performance</div>
+        <div style="font-size:.78rem;color:var(--text-2);margin-bottom:8px">
+          <strong>Normal</strong> : refresh 5s, diagnostics complets, mesure de latence à chaque cycle.<br>
+          <strong>Light</strong> : refresh 15s, latence désactivée, probes mises en cache 30s — recommandé sur lien VPN faible.<br>
+          <strong>Ultra</strong> : refresh 30s, diagnostics réseau désactivés, charts désactivés — pour Raspberry Pi Zero / Pi 1.<br>
+          L'adaptation auto bascule en Ultra temporairement si le CPU dépasse 70 % de manière soutenue.
+        </div>
+        <div class="maint-btns" id="mode-btns">
+          <button class="maint-btn" data-mode="normal" onclick="setDashboardMode('normal')">Normal</button>
+          <button class="maint-btn" data-mode="light" onclick="setDashboardMode('light')">&#9889; Light</button>
+          <button class="maint-btn" data-mode="ultra" onclick="setDashboardMode('ultra')">&#128293; Ultra</button>
+        </div>
+        <div id="mode-status" style="margin-top:8px;font-size:.78rem;color:var(--text-2)"></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Diagnostic complet</div>
+        <div style="font-size:.78rem;color:var(--text-2);margin-bottom:8px">
+          Génère un rapport exhaustif (CPU/IO, mémoire, swap, retransmits TCP, throttling, peers WG, top processus, dmesg, état SQLite, logs récents). Utile à joindre lors d'une demande d'aide.
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button onclick="runHealthCheck()" class="maint-btn" style="font-size:.8rem">&#128202; Health Check</button>
+          <button onclick="runLatencyAudit()" class="maint-btn" style="font-size:.8rem">&#128293; Latency Audit</button>
+          <button onclick="downloadDiagnosticBundle('json')" class="maint-btn" style="font-size:.8rem">&#11015; Bundle JSON</button>
+          <button onclick="downloadDiagnosticBundle('zip')" class="maint-btn" style="font-size:.8rem">&#11015; Bundle ZIP (+ logs)</button>
+          <span id="diag-bundle-msg" style="font-size:.78rem;color:var(--text-2)"></span>
+        </div>
+        <div id="health-check-result" style="margin-top:10px;font-size:.78rem;display:none"></div>
+        <div id="latency-audit-result" style="margin-top:10px;font-size:.78rem;display:none"></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label">Danger Zone</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button onclick="restartDashboard()" class="maint-btn" style="border-color:var(--danger);color:var(--danger)">&#8635; Restart HomelinkWG</button>
+          <span id="restart-dashboard-msg" style="font-size:.78rem;color:var(--text-2);display:none"></span>
+        </div>
+      </div>
+      <div id="perf-section" style="display:none" class="settings-section">
+        <div class="settings-label">Performance</div>
+        <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--text-2);cursor:pointer">
+          <input type="checkbox" id="toggle-live-logs" style="accent-color:var(--accent);cursor:pointer">
+          Enable live logs
+        </label>
+        <div class="range-hint">In ultra-light mode, logs are off by default.</div>
+      </div>
+      <div class="settings-section">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+          <!-- Change Password -->
+          <div>
+            <div class="settings-label">Change Password</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <input type="password" id="chpw-current" class="modal-input" placeholder="Current password" style="margin:0">
+              <input type="password" id="chpw-new"     class="modal-input" placeholder="New password (min 8 chars)" style="margin:0">
+              <input type="password" id="chpw-confirm" class="modal-input" placeholder="Confirm new password" style="margin:0">
+              <div style="display:flex;align-items:center;gap:10px;margin-top:2px">
+                <button class="btn btn-primary" onclick="changePassword()" style="flex-shrink:0">Update password</button>
+                <span id="chpw-msg" style="font-size:.78rem;display:none"></span>
+              </div>
+            </div>
+          </div>
+          <!-- Two-Factor Authentication -->
+          <div>
+            <div class="settings-label">Two-Factor Authentication</div>
+            <div id="twofa-unavailable" style="display:none;font-size:.78rem;color:var(--text-3);margin-bottom:10px">
+              pyotp not installed on server — run <code style="background:var(--surface);padding:2px 5px;border-radius:4px">pip install pyotp</code>
+            </div>
+            <div id="twofa-status-row" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <span id="twofa-badge" class="badge muted">loading…</span>
+              <button id="twofa-toggle-btn" class="maint-btn" onclick="toggle2fa()" style="display:none"></button>
+            </div>
+            <div id="twofa-setup-box" style="display:none;margin-top:14px;padding:14px;background:var(--surface);border:1px solid var(--border-2);border-radius:var(--r-sm)">
+              <div style="font-size:.78rem;color:var(--text-2);margin-bottom:12px;line-height:1.6">
+                Scan the QR code with Google Authenticator, Authy or any TOTP app, or enter the key manually.
+              </div>
+              <div style="display:flex;justify-content:center;margin-bottom:14px">
+                <div id="twofa-qr-inner" style="background:#fff;padding:10px;border-radius:8px;display:inline-block"></div>
+              </div>
+              <div style="font-size:.72rem;color:var(--text-3);margin-bottom:4px;font-weight:600;letter-spacing:.05em">SECRET KEY</div>
+              <div id="twofa-secret" style="font-family:monospace;font-size:.9rem;color:var(--accent-2);word-break:break-all;margin-bottom:14px;user-select:all;cursor:pointer" title="Click to copy" onclick="navigator.clipboard.writeText(this.textContent).then(()=>{this.style.opacity='.5';setTimeout(()=>this.style.opacity='',600)})"></div>
+              <div id="twofa-uri" style="display:none"></div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <input type="text" id="twofa-code-input" class="modal-input" placeholder="Enter 6-digit code to confirm" inputmode="numeric" maxlength="6" style="width:220px;margin:0" onkeypress="if(event.key==='Enter') confirm2faSetup()">
+                <button onclick="confirm2faSetup()" class="btn btn-primary">Confirm &amp; Enable</button>
+              </div>
+              <div id="twofa-setup-msg" style="margin-top:8px;font-size:.78rem;display:none"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-label" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Config Editor</span>
+          <span id="config-editor-msg" style="font-size:.75rem;color:var(--accent-2);display:none"></span>
+        </div>
+        <div style="font-size:.78rem;color:var(--text-2);margin-bottom:10px;line-height:1.5">
+          Edit <code style="background:var(--surface);padding:1px 5px;border-radius:3px">config.json</code> directly. Changes take effect immediately — no restart needed.
+        </div>
+        <textarea id="config-editor-textarea" spellcheck="false"
+          style="width:100%;min-height:200px;font-family:monospace;font-size:.78rem;background:var(--surface);color:var(--text);border:1px solid var(--border-2);border-radius:var(--r-sm);padding:10px;resize:vertical;box-sizing:border-box;line-height:1.5;outline:none"
+          oninput="validateConfigJSON(this)"></textarea>
+        <div id="config-json-error" style="font-size:.75rem;color:var(--danger);margin-top:4px;display:none"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button onclick="loadConfigEditor()" class="maint-btn" style="font-size:.8rem">&#8635; Reload</button>
+          <button onclick="saveConfig()" class="btn btn-primary" id="config-save-btn" style="font-size:.8rem">Save</button>
+          <button onclick="downloadConfigBackup()" class="maint-btn" style="font-size:.8rem">&#11015; Backup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alert" style="display:none">
+    <div class="alert-strip danger"><span id="alert-text">offline</span></div>
+  </div>
+  <div id="mute-banner" style="display:none">
+    <div class="alert-strip muted"><span id="mute-banner-text">alerts muted</span></div>
+  </div>
+
+  <!-- ── TAB NAV ── -->
+  <nav class="tab-nav" id="main-tab-nav">
+    <button class="tab-btn-nav active" id="tab-btn-nav-status" onclick="switchTab('status')">Status</button>
+    <button class="tab-btn-nav" id="tab-btn-nav-services" onclick="switchTab('services')">Services</button>
+    <button class="tab-btn-nav admin-only" id="tab-btn-nav-logs" onclick="switchTab('logs')" style="display:none">Logs</button>
+  </nav>
+
+  <!-- ── TAB: STATUS ── -->
+  <div id="tab-status">
+    <div class="grid">
+
+      <div class="card">
+        <div class="card-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          VPN
+        </div>
+        <div class="row">
+          <span class="label">Status</span>
+          <span class="value"><span id="vpn-dot" class="dot"></span><span id="vpn-badge" class="badge muted">?</span></span>
+        </div>
+        <div class="row"><span class="label">Interface</span><span class="value" id="vpn-iface">&#8212;</span></div>
+        <div class="row"><span class="label">IP</span><span class="value" id="vpn-ip">&#8212;</span></div>
+        <div class="row" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border)"><span class="label" style="color:var(--text-3);font-size:.72rem;letter-spacing:.04em">HOST NETWORK</span></div>
+        <div class="row"><span class="label">Interface</span><span class="value" id="sys-net-iface">&#8212;</span></div>
+        <div class="row"><span class="label">Link speed</span><span class="value" id="sys-net-speed">&#8212;</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          System
+        </div>
+        <div class="row"><span class="label">CPU</span><span class="value" id="sys-cpu">&#8212;</span></div>
+        <div class="row"><span class="label">Memory</span><span class="value" id="sys-mem">&#8212;</span></div>
+        <div class="row"><span class="label">Load</span><span class="value" id="sys-load">&#8212;</span></div>
+        <div class="row"><span class="label">Uptime</span><span class="value" id="sys-up">&#8212;</span></div>
+        <div class="row"><span class="label">Disk latency</span><span class="value" id="sys-disk-latency">&#8212;</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+          WireGuard
+        </div>
+        <div class="row"><span class="label">Downloaded</span><span class="value" id="net-rx">&#8212;</span></div>
+        <div class="row"><span class="label">Uploaded</span><span class="value" id="net-tx">&#8212;</span></div>
+      </div>
+
+      <!-- System Diagnostic card — admin only -->
+      <div class="card full admin-only" id="perf-diag-card" style="display:none">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+          <span style="display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            System Diagnostic
+          </span>
+          <button class="btn btn-primary" id="perf-diag-btn" onclick="runPerfDiagnostic()" style="font-size:.78rem;padding:5px 12px;min-height:0">&#9654; Run</button>
+        </div>
+        <div style="font-size:.78rem;color:var(--text-2);margin-bottom:8px">Tests disk, network, CPU and memory — identifies what limits streaming performance.</div>
+        <span id="perf-diag-status" style="font-size:.78rem;color:var(--text-2);display:none"></span>
+        <!-- Results panel -->
+        <div id="perf-diag-results" style="display:none;margin-top:10px">
+          <div id="perf-verdict-banner" style="padding:12px 14px;border-radius:var(--r-sm);margin-bottom:10px;font-size:.85rem;line-height:1.5;border:1px solid transparent"></div>
+          <div id="perf-test-rows" style="display:flex;flex-direction:column;gap:6px;font-size:.8rem"></div>
+          <div id="perf-recommendations" style="display:none;margin-top:12px">
+            <div style="font-size:.75rem;font-weight:600;letter-spacing:.06em;color:var(--text-3);margin-bottom:6px;text-transform:uppercase">Recommendations</div>
+            <ul id="perf-reco-list" style="margin:0;padding-left:18px;color:var(--text-2);font-size:.8rem;line-height:1.7"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <div class="card-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Diagnostics
+        </div>
+        <div class="diag" id="diag"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── TAB: SERVICES ── -->
+  <div id="tab-services" style="display:none">
+    <div class="section-row" style="margin-top:4px">
+      <span class="section-heading">Services</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="export-csv-btn" class="admin-only maint-btn" style="display:none;font-size:.75rem;padding:5px 10px" onclick="exportMetricsCSV()">&#11015; Export CSV</button>
+        <div id="timeframe-selector" class="timeframe-group" style="display:none">
+          <button data-timeframe="24h" class="timeframe-btn active">24h</button>
+          <button data-timeframe="7d" class="timeframe-btn">7 days</button>
+          <button data-timeframe="30d" class="timeframe-btn">30 days</button>
+        </div>
+      </div>
+    </div>
+    <div id="services-container"></div>
+  </div>
+
+  <!-- ── TAB: LOGS (admin only) ── -->
+  <div id="tab-logs" style="display:none">
+    <div class="card full" id="logs-section">
+      <div class="logs-grid">
+        <div>
+          <div class="section-title">Recent Incidents</div>
+          <div id="incidents-list">
+            <div style="color:var(--text-3);font-size:.82rem">No incidents in last 24h</div>
+          </div>
+        </div>
+        <div>
+          <div class="log-controls">
+            <div class="log-filters">
+              <div class="section-title" style="margin:0;margin-right:6px">Live Logs</div>
+              <label class="log-filter"><input type="checkbox" id="filter-incident" checked onchange="filterLogs()"> Incidents</label>
+              <label class="log-filter"><input type="checkbox" id="filter-systemd" checked onchange="filterLogs()"> SystemD</label>
+              <label class="log-filter"><input type="checkbox" id="filter-socat" checked onchange="filterLogs()"> Socat</label>
+              <label class="log-filter"><input type="checkbox" id="filter-wireguard" checked onchange="filterLogs()"> WG</label>
+            </div>
+            <div class="log-actions">
+              <input type="text" id="log-search" class="log-search" placeholder="Search&#8230;">
+              <button onclick="exportLogs()" class="log-btn">Export</button>
+              <button onclick="clearLogs()" class="log-btn danger">Clear</button>
+            </div>
+          </div>
+          <div id="logs-stream">
+            <span style="color:var(--text-3)">Connecting to log stream&#8230;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card full" style="margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="section-title" style="margin:0">Audit Log</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="audit-search" class="log-search" placeholder="Filter&#8230;" oninput="filterAuditLog()" style="width:160px">
+          <button onclick="loadAuditLog()" class="log-btn" title="Rafra&#238;chir">&#8635;</button>
+        </div>
+      </div>
+      <div id="audit-log-list" style="font-size:.78rem;font-family:monospace;max-height:340px;overflow-y:auto">
+        <span style="color:var(--text-3)">Loading&#8230;</span>
+      </div>
+    </div>
+  </div>
+
+    <div class="card full admin-only" style="margin-top:14px;display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="section-title" style="margin:0">Admin Sessions</div>
+        <button onclick="loadSessionsHistory()" class="log-btn" title="Refresh">&#8635;</button>
+      </div>
+      <div id="sessions-history-list" style="font-size:.78rem;max-height:260px;overflow-y:auto">
+        <span style="color:var(--text-3)">Loading&#8230;</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">Live updates &middot; fallback refresh every {{ (refresh_ms // 1000) }}s &middot; <a href="/api/status">JSON API</a></div>
+
+</div>
+
+<script>
+// Tab switching (runs before main script; references globals defined later)
+function switchTab(name) {
+  var tabs = ['status','services','logs'];
+  tabs.forEach(function(t) {
+    var btn = document.getElementById('tab-btn-nav-' + t);
+    var pane = document.getElementById('tab-' + t);
+    if (btn) btn.classList.toggle('active', t === name);
+    if (pane) pane.style.display = t === name ? '' : 'none';
+  });
+  // Initialise logs when tab is first opened
+  if (name === 'logs') {
+    var ls = document.getElementById('logs-section');
+    if (ls) ls.style.display = '';
+    if (typeof loadIncidents === 'function') loadIncidents();
+    if (typeof loadAuditLog === 'function') loadAuditLog();
+    if (typeof loadSessionsHistory === 'function') setTimeout(loadSessionsHistory, 80);
+    if (typeof streamLogs === 'function' && !window._logTabInited) {
+      window._logTabInited = true;
+      streamLogs();
+    }
+  }
+}
+</script>
+
+  <script>
+	  const REFRESH_MS = {{ refresh_ms }};
+	  const ANALYTICS_REFRESH_MS = {{ analytics_refresh_ms }};
+	  const SESSION_KEY = 'homelinkwg_admin_token';
+	  const SESSION_EXPIRY_KEY = 'homelinkwg_token_expiry';
+	  const LOGS_ENABLED_KEY = 'homelinkwg_logs_enabled';
+	  const $ = (id) => document.getElementById(id);
+	  let chartInstances = {};
+	  let serviceMetrics = {};
+	  let adminMode = false;
+	  let selectedTimeframe = '24h';
+	  let lastAnalyticsRefresh = 0;
+	  let timeframeButtonsInitialized = false;
+	  let thresholdSyncInitialized = false;
+	  let publicReadOnly = true;
+	  let lastMode = 'public';
+	  let statusStream = null;
+	  let pollTimer = null;
+	  let pollBackoffMs = REFRESH_MS;
+	  let runtimeLightMode = false;
+	  const expandedCharts = new Set(); // portId
+	  let runtimeUltraLight = false;
+	  const metricsFetchInFlight = {}; // portId -> Promise
+
+	  function isLiveLogsEnabled() {
+	    if (!adminMode) return false;
+	    if (!runtimeUltraLight) return true;
+	    return sessionStorage.getItem(LOGS_ENABLED_KEY) === 'true';
+	  }
+
+	  function setLiveLogsEnabled(v) {
+	    sessionStorage.setItem(LOGS_ENABLED_KEY, v ? 'true' : 'false');
+	    updateAdminUI();
+	  }
+
+  // =========================================================================
+	  // Authentication & Session Management
+	  // =========================================================================
+
+	  function openWhatsNew() {
+	    const m = $('whatsnew-modal');
+	    if (!m) return;
+	    m.classList.add('show');
+	    // Let the browser paint the modal before we start the fetch.
+	    requestAnimationFrame(() => loadWhatsNew());
+	  }
+
+	  function closeWhatsNew() {
+	    const m = $('whatsnew-modal');
+	    if (!m) return;
+	    m.classList.remove('show');
+	  }
+
+	  async function loadWhatsNew() {
+	    const box = $('whatsnew-content');
+	    const sub = $('whatsnew-subtitle');
+	    if (box) box.textContent = 'Loading...';
+	    try {
+	      const r = await fetch('/api/whats-new', { cache: 'no-store' });
+	      if (!r.ok) throw new Error('HTTP ' + r.status);
+	      const data = await r.json();
+	      if (sub) sub.textContent = data && data.version ? (`v${data.version} · ${data.date || ''}`) : '';
+	      if (box) box.textContent = (data && data.notes) ? data.notes : 'No release notes found.';
+	    } catch (e) {
+	      if (box) box.textContent = 'Failed to load release notes: ' + e.message;
+	    }
+	  }
+
+  let _loginTotpRequired = false;
+  let _lockoutTimer = null;
+
+  async function showLoginModal() {
+    _loginTotpRequired = false;
+    $('login-modal').classList.add('show');
+    $('password-input').focus();
+    $('login-error').style.display = 'none';
+    $('login-attempts').style.display = 'none';
+    $('login-lockout').style.display = 'none';
+    $('totp-section').style.display = 'none';
+    const submitBtn = $('login-submit-btn');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Login'; }
+    // Pre-check: show TOTP field immediately if 2FA is enabled
+    try {
+      const r = await fetch('/api/2fa/status', { cache: 'no-store' });
+      if (r.ok) {
+        const d = await r.json();
+        if (d.enabled) {
+          _loginTotpRequired = true;
+          $('totp-section').style.display = '';
+        }
+      }
+    } catch (_) {}
+  }
+
+  function closeLoginModal() {
+    $('login-modal').classList.remove('show');
+    $('password-input').value = '';
+    if ($('totp-input')) $('totp-input').value = '';
+    $('login-error').style.display = 'none';
+    $('login-attempts').style.display = 'none';
+    $('login-lockout').style.display = 'none';
+    $('totp-section').style.display = 'none';
+    _loginTotpRequired = false;
+    if (_lockoutTimer) { clearInterval(_lockoutTimer); _lockoutTimer = null; }
+    const submitBtn = $('login-submit-btn');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Login'; }
+  }
+
+  function _startLockoutCountdown(retryAfter) {
+    const lockoutEl = $('login-lockout');
+    const submitBtn = $('login-submit-btn');
+    if (submitBtn) submitBtn.disabled = true;
+    if (_lockoutTimer) clearInterval(_lockoutTimer);
+    let remaining = retryAfter;
+    const update = () => {
+      if (remaining <= 0) {
+        clearInterval(_lockoutTimer);
+        _lockoutTimer = null;
+        lockoutEl.style.display = 'none';
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Login'; }
+        $('login-attempts').style.display = 'none';
+        return;
+      }
+      lockoutEl.style.display = '';
+      lockoutEl.textContent = `Too many failed attempts — try again in ${remaining}s`;
+      remaining--;
+    };
+    update();
+    _lockoutTimer = setInterval(update, 1000);
+  }
+
+  async function submitLogin() {
+    const password = $('password-input').value;
+    if (!password) { showLoginError('Please enter a password'); return; }
+    const totpInput = $('totp-input');
+    const totpCode = totpInput ? totpInput.value.trim() : '';
+    const body = { password };
+    if (totpCode) body.totp_code = totpCode;
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await response.json();
+
+      if (response.status === 429) {
+        $('login-error').style.display = 'none';
+        $('login-attempts').style.display = 'none';
+        _startLockoutCountdown(data.retry_after || 30);
+        return;
+      }
+      if (response.status === 401) {
+        const remaining = data.remaining;
+        if (data.requires_2fa) {
+          showLoginError('Invalid 2FA code');
+        } else if (remaining !== undefined && remaining > 0) {
+          showLoginError('Wrong password');
+          const attEl = $('login-attempts');
+          attEl.textContent = `${remaining} attempt${remaining > 1 ? 's' : ''} remaining before lockout`;
+          attEl.style.display = '';
+        } else {
+          showLoginError('Wrong password');
+        }
+        return;
+      }
+      if (!response.ok) {
+        showLoginError(data.error || 'Login failed');
+        return;
+      }
+      // 2FA required — reveal TOTP field
+      if (data.requires_2fa) {
+        _loginTotpRequired = true;
+        $('login-error').style.display = 'none';
+        $('totp-section').style.display = '';
+        const ti = $('totp-input');
+        if (ti) { ti.value = ''; ti.focus(); }
+        $('login-attempts').textContent = 'Enter the 6-digit code from your authenticator app';
+        $('login-attempts').style.display = '';
+        return;
+      }
+      // Success
+      sessionStorage.setItem(SESSION_KEY, data.token);
+      sessionStorage.setItem(SESSION_EXPIRY_KEY, Date.now() + (data.expires_in * 1000));
+      adminMode = true;
+      updateAdminUI();
+      resetServiceUI();
+      closeLoginModal();
+      await refresh({ restartStream: true });
+    } catch (e) {
+      showLoginError('Login failed: ' + e.message);
+    }
+  }
+
+  function showLoginError(msg) {
+    const errorDiv = $('login-error');
+    errorDiv.textContent = msg;
+    errorDiv.style.display = 'block';
+  }
+
+		  async function logout() {
+	    const token = sessionStorage.getItem(SESSION_KEY);
+	    if (token) {
+	      try {
+	        await fetch('/api/logout?token=' + encodeURIComponent(token), { method: 'POST' });
+      } catch (e) {
+        // Silently fail
+      }
+    }
+
+		    sessionStorage.removeItem(SESSION_KEY);
+		    sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+		    adminMode = false;
+		    updateAdminUI();
+		    resetServiceUI();
+		    refresh({ restartStream: true });
+		  }
+
+  function getSessionToken() {
+    const token = sessionStorage.getItem(SESSION_KEY);
+    const expiry = sessionStorage.getItem(SESSION_EXPIRY_KEY);
+
+    // Check if token exists and not expired
+    if (token && expiry && Date.now() < parseInt(expiry)) {
+      return token;
+    }
+
+    // Token expired or missing
+    if (token) {
+      sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+    }
+    return null;
+  }
+
+		  function updateAdminUI() {
+		    const adminElements = document.querySelectorAll('.admin-only');
+		    if (adminMode) {
+	      lastMode = 'admin';
+      _startIdleCheck();
+	      $('mode-badge').textContent = '🔓 ADMIN';
+	      $('mode-badge').className = 'mode-badge admin';
+	      $('login-btn').style.display = 'none';
+	      $('logout-btn').style.display = 'block';
+	      const settingsBtn = $('settings-btn');
+	      if (settingsBtn) settingsBtn.style.display = '';
+	      adminElements.forEach(el => el.style.display = '');
+		      // Logs/Incidents can be disabled in ultra-light mode to save resources.
+		      const logsSection = $('logs-section');
+		      if (logsSection) logsSection.style.display = isLiveLogsEnabled() ? '' : 'none';
+	      // Show timeframe selector
+	      const timeframeSelector = $('timeframe-selector');
+	      if (timeframeSelector) timeframeSelector.style.display = runtimeUltraLight ? 'none' : 'flex';
+	      const csvBtn = document.getElementById('export-csv-btn'); if (csvBtn) csvBtn.style.display = runtimeUltraLight ? 'none' : '';
+	      // Initialize timeframe buttons only when analytics UI is enabled.
+	      if (!runtimeUltraLight) initTimeframeButtons();
+	      // Incidents/logs are loaded only when enabled.
+	      if (isLiveLogsEnabled()) {
+	        loadIncidents();
+	        streamLogs();
+	      } else {
+	        stopLogStream();
+	      }
+	      // Audit log + admin sessions cards are admin-only but live OUTSIDE
+	      // the Logs tab, so populate them right away on login (otherwise they
+	      // sit on "Loading…" until the user manually clicks refresh).
+	      if (typeof loadAuditLog === 'function') loadAuditLog();
+	      if (typeof loadSessionsHistory === 'function') loadSessionsHistory();
+	      // Settings modal is loaded on demand.
+		    } else {
+	      lastMode = 'public';
+	      $('mode-badge').textContent = '📖 PUBLIC';
+	      $('mode-badge').className = 'mode-badge public';
+	      $('login-btn').style.display = 'block';
+	      $('logout-btn').style.display = 'none';
+	      const settingsBtn = $('settings-btn');
+	      if (settingsBtn) settingsBtn.style.display = 'none';
+		      adminElements.forEach(el => el.style.display = 'none');
+		      // Hide logs section
+		      const logsSection = $('logs-section');
+		      if (logsSection) logsSection.style.display = 'none';
+	      // Hide timeframe selector
+	      const timeframeSelector = $('timeframe-selector');
+	      if (timeframeSelector) timeframeSelector.style.display = 'none';
+	      const csvBtnPub = document.getElementById('export-csv-btn'); if (csvBtnPub) csvBtnPub.style.display = 'none';
+	      // Stop log streaming when leaving admin mode (saves resources)
+	      stopLogStream();
+	    }
+	    // Keep Settings > Performance UI in sync (ultra-light toggles).
+	    syncPerfSettingsUI();
+	  }
+
+		  function stopLogStream() {
+		    if (logStream) {
+		      try { logStream.close(); } catch (e) {}
+		      logStream = null;
+		    }
+		    if (logRetryTimer) {
+		      clearTimeout(logRetryTimer);
+		      logRetryTimer = null;
+		    }
+		    logRetryCount = 0;
+		  }
+
+		  function applyAdminVisibility(root) {
+		    // Some admin-only elements are created dynamically (service cards).
+		    // Ensure they reflect the current mode immediately.
+		    if (!root) return;
+		    const els = root.querySelectorAll('.admin-only');
+		    els.forEach(el => { el.style.display = adminMode ? '' : 'none'; });
+		  }
+
+	  function formatDateTime(ts) {
+	    if (!ts || ts <= 0) return 'n/a';
+	    return new Date(ts * 1000).toLocaleString();
+	  }
+
+  function renderMuteBanner(alerts) {
+    const banner = $('mute-banner');
+    const text = $('mute-banner-text');
+    if (!banner || !text) return;
+    if (alerts && alerts.muted) {
+      banner.style.display = '';
+      text.textContent = `Alerts muted until ${alerts.until_iso || formatDateTime(alerts.until_ts)}`;
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  async function muteAlerts(duration) {
+    const token = getSessionToken();
+    if (!token) return;
+    try {
+      const response = await fetch(`/api/alerts/mute?token=${encodeURIComponent(token)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ duration })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Mute failed');
+      const msg = $('maintenance-msg');
+      if (msg) msg.textContent = `Alerts muted until ${data.alerts.until_iso || formatDateTime(data.alerts.until_ts)}.`;
+      renderMuteBanner(data.alerts);
+      refresh();
+    } catch (e) {
+      const msg = $('maintenance-msg');
+      if (msg) msg.textContent = `Mute failed: ${e.message}`;
+    }
+  }
+
+  async function unmuteAlerts() {
+    const token = getSessionToken();
+    if (!token) return;
+    try {
+      const response = await fetch(`/api/alerts/unmute?token=${encodeURIComponent(token)}`, {
+        method: 'POST'
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Unmute failed');
+      const msg = $('maintenance-msg');
+      if (msg) msg.textContent = 'Alerts unmuted.';
+      renderMuteBanner(data.alerts);
+      refresh();
+    } catch (e) {
+      const msg = $('maintenance-msg');
+      if (msg) msg.textContent = `Unmute failed: ${e.message}`;
+    }
+  }
+
+  // =========================================================================
+  // =========================================================================
+
+  function initTimeframeButtons() {
+    if (timeframeButtonsInitialized) return;
+    const buttons = document.querySelectorAll('.timeframe-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Update active button — remove class AND inline styles from all
+        buttons.forEach(b => {
+          b.classList.remove('active');
+          b.style.background = '';
+          b.style.borderColor = '';
+          b.style.color = '';
+        });
+        btn.classList.add('active');
+
+        // Update selected timeframe and refresh
+        selectedTimeframe = btn.getAttribute('data-timeframe');
+        lastAnalyticsRefresh = 0;
+        refresh();  // Refresh all data with new timeframe
+      });
+    });
+
+    // Initialize log search
+    const searchInput = $('log-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', filterLogs);
+    }
+    timeframeButtonsInitialized = true;
+  }
+
+  // Calculate trend (↑ improving, ↓ declining, → stable) by comparing first half vs second half
+  function calculateTrend(values) {
+    const cleanValues = values.filter(v => v !== null && v !== undefined && v >= 0);
+    if (cleanValues.length < 2) return '→';  // No trend data
+
+    const mid = Math.floor(cleanValues.length / 2);
+    const firstHalf = cleanValues.slice(0, mid);
+    const secondHalf = cleanValues.slice(mid);
+
+    const avg1 = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+    const avg2 = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+
+    // For availability: higher is better
+    // For latency: lower is better
+    const diff = avg2 - avg1;
+    const tolerance = Math.max(avg1, avg2) * 0.02;  // 2% tolerance
+
+    if (Math.abs(diff) < tolerance) return '→';
+    return diff < 0 ? '↑' : '↓';  // For uptime: ↑ is good, ↓ is bad; for latency it's inverted
+  }
+
+  // Get trend for uptime (higher is better)
+  function getUptimeTrend(metrics) {
+    const availability = metrics.map(m => (m.service_active && m.port_listening && m.target_reachable) ? 100 : 0);
+    const trend = calculateTrend(availability);
+    return trend === '↑' ? '<span style="color:#10b981">↑</span>' :
+           trend === '↓' ? '<span style="color:#ef4444">↓</span>' :
+           '<span style="color:#94a3b8">→</span>';
+  }
+
+  // Get trend for latency (lower is better)
+	  function getLatencyTrend(metrics) {
+	    const latencies = metrics.map(m => m.latency_ms >= 0 ? m.latency_ms : null);
+	    const trend = calculateTrend(latencies);
+	    return trend === '↓' ? '<span style="color:#10b981">↓</span>' :
+	           trend === '↑' ? '<span style="color:#ef4444">↑</span>' :
+	           '<span style="color:#94a3b8">→</span>';
+	  }
+
+	  function renderUptimeTrendFromCode(code) {
+	    if (!code || code === 'na') return '<span style="color:#94a3b8">→</span>';
+	    if (code === 'up') return '<span style="color:#10b981">↑</span>';
+	    if (code === 'down') return '<span style="color:#ef4444">↓</span>';
+	    return '<span style="color:#94a3b8">→</span>';
+	  }
+
+	  function renderLatencyTrendFromCode(code) {
+	    if (!code || code === 'na') return '<span style="color:#94a3b8">→</span>';
+	    if (code === 'good') return '<span style="color:#10b981">↓</span>';
+	    if (code === 'bad') return '<span style="color:#ef4444">↑</span>';
+	    return '<span style="color:#94a3b8">→</span>';
+	  }
+
+  // Draw availability heatmap by day
+  function drawHeatmap(portId, metrics) {
+    const heatmapDiv = document.getElementById(`heatmap-${portId}`);
+    if (!heatmapDiv) return;
+
+    // Group metrics by day
+    const dayMap = {};
+    metrics.forEach(m => {
+      const date = new Date(m.timestamp * 1000);
+      const dateStr = date.toISOString().split('T')[0];
+      if (!dayMap[dateStr]) dayMap[dateStr] = [];
+      dayMap[dateStr].push((m.service_active && m.port_listening && m.target_reachable) ? 1 : 0);
+    });
+
+    // Calculate daily availability
+    const days = Object.keys(dayMap).sort();
+    const dailyAvailability = days.map(day => {
+      const samples = dayMap[day];
+      return (samples.reduce((a, b) => a + b, 0) / samples.length) * 100;
+    });
+
+    // Create heatmap squares
+    heatmapDiv.innerHTML = '';
+    const now = new Date();
+
+    dailyAvailability.forEach((avail, idx) => {
+      const dayStr = days[idx];
+      const date = new Date(dayStr + 'T00:00:00Z');
+      const daysAgo = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+      const label = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : daysAgo + 'd ago';
+
+      // Color scale: red (0%) to green (100%)
+      const h = (avail / 100) * 120;  // 0=red, 120=green
+      const color = `hsl(${h}, 70%, 50%)`;
+
+      const square = document.createElement('div');
+      square.style.width = '24px';
+      square.style.height = '24px';
+      square.style.backgroundColor = color;
+      square.style.borderRadius = '3px';
+      square.style.cursor = 'pointer';
+      square.style.border = '1px solid rgba(255,255,255,0.1)';
+      square.title = `${label}: ${avail.toFixed(0)}%`;
+      heatmapDiv.appendChild(square);
+    });
+
+    // Add legend
+    const legend = document.createElement('div');
+    legend.style.marginTop = '8px';
+    legend.style.fontSize = '0.7em';
+    legend.style.color = 'var(--text-3)';
+    legend.textContent = `${dailyAvailability.length} days shown (red=down, green=up)`;
+    heatmapDiv.appendChild(legend);
+  }
+
+  // =========================================================================
+  // =========================================================================
+
+  let allLogs = [];  // Store all logs for filtering
+
+  function filterLogs() {
+    const searchQuery = ($('log-search').value || '').toLowerCase();
+    const showIncident = $('filter-incident').checked;
+    const showSystemd = $('filter-systemd').checked;
+    const showSocat = $('filter-socat').checked;
+    const showWireguard = $('filter-wireguard').checked;
+
+    const logsDiv = $('logs-stream');
+    logsDiv.innerHTML = '';
+
+    const filtered = allLogs.filter(log => {
+      const matchesSearch = searchQuery === '' || log.message.toLowerCase().includes(searchQuery);
+      let matchesType = false;
+      if (log.type === 'incident' && showIncident) matchesType = true;
+      if (log.type === 'systemd' && showSystemd) matchesType = true;
+      if (log.type === 'socat' && showSocat) matchesType = true;
+      if (log.type === 'wireguard' && showWireguard) matchesType = true;
+      return matchesSearch && matchesType;
+    });
+
+    if (filtered.length === 0) {
+      logsDiv.innerHTML = '<div style="color:var(--text-3)">No logs match filters</div>';
+      return;
+    }
+
+    filtered.forEach(log => {
+      const color = log.type === 'incident' ? '#fbbf24' : log.type === 'systemd' ? '#a78bfa' : log.type === 'socat' ? '#60a5fa' : '#10b981';
+      const line = document.createElement('div');
+      line.style.color = color;
+      line.textContent = log.message;
+      logsDiv.appendChild(line);
+    });
+  }
+
+  function exportLogs() {
+    if (allLogs.length === 0) {
+      alert('No logs to export');
+      return;
+    }
+
+    // Create CSV
+    let csv = 'Timestamp,Type,Message\n';
+    allLogs.forEach(log => {
+      const message = log.message.replace(/"/g, '""');  // Escape quotes
+      csv += `"${log.message.split('] ')[0].slice(1)}","${log.type}","${message}"\n`;
+    });
+
+    // Download
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `homelinkwg-logs-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  }
+
+  function clearLogs() {
+    if (confirm('Clear all logs?')) {
+      allLogs = [];
+      $('logs-stream').innerHTML = '<div style="color:var(--text-3)">Logs cleared</div>';
+    }
+  }
+
+  // =========================================================================
+  // =========================================================================
+
+  async function loadIncidents() {
+    try {
+      const token = getSessionToken();
+      if (!token) return;
+
+      const response = await fetch(`/api/incidents?token=${encodeURIComponent(token)}`);
+      if (!response.ok) return;
+      const data = await response.json();
+      const list = $('incidents-list');
+      if (!list) return;
+
+      if (data.count === 0) {
+        list.innerHTML = '<div style="color:var(--text-3)">No incidents in last 24h ✓</div>';
+        return;
+      }
+
+      let html = '';
+      for (const incident of data.incidents.slice(0, 20)) {
+        const dt = new Date(incident.timestamp * 1000).toLocaleTimeString();
+        const severityColor = incident.severity === 'high' ? '#dc2626' : '#f97316';
+        html += `<div style="margin-bottom:8px;padding:8px;background:var(--bg);border-left:3px solid ${severityColor};border-radius:4px;display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="flex:1">
+            <div style="font-size:0.8em;color:var(--text-3)">${dt}</div>
+            <div style="color:#e2e8f0;font-weight:600">${incident.service_name}</div>
+            <div style="color:var(--text-3);font-size:0.85em">${incident.description}</div>
+          </div>
+          <button onclick="closeIncident(${incident.id})" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:1.2em;padding:0;margin-left:8px;line-height:1" title="Close incident">✕</button>
+        </div>`;
+      }
+      list.innerHTML = html;
+    } catch (e) {
+      console.error("Failed to load incidents:", e);
+    }
+  }
+
+  async function closeIncident(incidentId) {
+    try {
+      const token = getSessionToken();
+      if (!token) return;
+
+      const response = await fetch(`/api/incidents/${incidentId}?token=${encodeURIComponent(token)}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        loadIncidents();
+      } else {
+        console.error("Failed to close incident");
+      }
+    } catch (e) {
+      console.error("Error closing incident:", e);
+    }
+  }
+
+  // =========================================================================
+  // =========================================================================
+
+  async function loadThresholds() {
+    try {
+      const token = getSessionToken();
+      if (!token) return;
+
+      const response = await fetch(`/api/thresholds?token=${encodeURIComponent(token)}`);
+      if (!response.ok) return;
+      const data = await response.json();
+
+      // Update sliders and inputs
+      const latency = data.thresholds.latency_threshold_ms;
+      const uptime = data.thresholds.uptime_threshold_percent;
+
+      const latencySlider = $('latency-slider');
+      const latencyInput = $('latency-input');
+      const uptimeSlider = $('uptime-slider');
+      const uptimeInput = $('uptime-input');
+
+      if (latencySlider) { latencySlider.value = latency; latencySlider.dispatchEvent(new Event('input')); }
+      if (latencyInput) latencyInput.value = latency;
+      if (uptimeSlider) { uptimeSlider.value = uptime; uptimeSlider.dispatchEvent(new Event('input')); }
+      if (uptimeInput) uptimeInput.value = uptime;
+      const timeout = data.thresholds.session_timeout_minutes ?? 30;
+      const toSlider = $('timeout-slider'); const toInput = $('timeout-input');
+      if (toSlider) { toSlider.value = timeout; toSlider.dispatchEvent(new Event('input')); }
+      if (toInput) toInput.value = timeout;
+      // Update runtime inactivity timer
+      _sessionTimeoutMs = timeout * 60 * 1000;
+    } catch (e) {
+      console.error("Failed to load thresholds:", e);
+    }
+  }
+
+  async function saveThresholds() {
+    const token = getSessionToken();
+    if (!token) {
+      alert('Not authenticated');
+      return;
+    }
+
+    const latency = parseFloat($('latency-input').value);
+    const uptime  = parseFloat($('uptime-input').value);
+    const timeout = parseFloat($('timeout-input') ? $('timeout-input').value : 30);
+
+    if (isNaN(latency) || isNaN(uptime) || isNaN(timeout)) {
+      alert('Invalid values');
+      return;
+    }
+
+    if (latency < 1 || latency > 500) {
+      alert('Latency must be between 1 and 500 ms');
+      return;
+    }
+
+    if (uptime < 50 || uptime > 100) {
+      alert('Uptime must be between 50 and 100%');
+      return;
+    }
+
+    if (timeout < 5 || timeout > 240) {
+      alert('Session timeout must be between 5 and 240 minutes');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/thresholds?token=${encodeURIComponent(token)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latency_threshold_ms: latency,
+          uptime_threshold_percent: uptime,
+          session_timeout_minutes: timeout
+        })
+      });
+
+      if (!response.ok) {
+        alert('Failed to save settings');
+        return;
+      }
+
+      const result = await response.json();
+      const msg = $('settings-message');
+      if (msg) {
+        msg.textContent = '✓ Settings saved successfully!';
+        msg.style.color = '#6ee7b7';
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 3000);
+      }
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  }
+
+	  // Sync slider and input
+	  function syncThreshold(sliderId, inputId) {
+	    const slider = $(sliderId);
+	    const input = $(inputId);
+	    if (!slider || !input) return;
+
+	    const updateFill = () => {
+	      const min = parseFloat(slider.min || "0");
+	      const max = parseFloat(slider.max || "100");
+	      const val = parseFloat(slider.value || "0");
+	      const pct = max > min ? ((val - min) / (max - min)) * 100 : 0;
+	      // Green filled track (requested) without heavy CSS tricks.
+	      slider.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${pct}%, var(--border) ${pct}%, var(--border) 100%)`;
+	    };
+
+	    slider.addEventListener('input', () => { input.value = slider.value; updateFill(); });
+	    input.addEventListener('change', () => { slider.value = input.value; updateFill(); });
+	    // Initial fill.
+	    updateFill();
+	  }
+
+	  let logStream = null;
+	  let logRetryCount = 0;
+	  let logRetryTimer = null;
+
+		  function streamLogs() {
+		    if (logStream) {
+		      logStream.close();
+		      logStream = null;
+		    }
+    if (logRetryTimer) {
+      clearTimeout(logRetryTimer);
+      logRetryTimer = null;
+    }
+
+	    const logsDiv = $('logs-stream');
+	    if (!logsDiv) return;
+	    logsDiv.dataset.connected = '0';
+	    logsDiv.dataset.cleared = '0';
+
+    const token = getSessionToken();
+    if (!token) {
+      logsDiv.innerHTML = '<div style="color:var(--danger)">❌ Not authenticated</div>';
+      return;
+    }
+
+	    try {
+	      logsDiv.innerHTML = '<div style="color:var(--accent-2)">⏳ Connecting to logs...</div>';
+
+		      logStream = new EventSource(`/api/logs?token=${encodeURIComponent(token)}`);
+
+      logStream.onopen = () => {
+        logRetryCount = 0;
+        console.log('[logs] Connected to stream');
+      };
+
+		      logStream.onmessage = (event) => {
+		        try {
+		          const log = JSON.parse(event.data);
+
+		          if (log.type === 'ready') {
+		            logsDiv.dataset.connected = '1';
+		            return;
+		          }
+
+          if (log.type === 'heartbeat' || event.data.startsWith(':')) {
+            // Heartbeat to keep connection alive - don't display
+            return;
+          }
+
+          if (log.type === 'error') {
+            console.error('[logs] Server error:', log.message);
+            return;
+          }
+
+	          // Store in allLogs for filtering/export
+		          if (log.message) {
+		            if (log.message === 'Connected to log stream' || log.message === '✓ Log stream connected') {
+		              // Never render connection noise.
+		              return;
+		            }
+		            // Drop the initial placeholder as soon as we receive the first real log line.
+		            if (logsDiv.dataset.cleared !== '1') {
+		              logsDiv.innerHTML = '';
+		              logsDiv.dataset.cleared = '1';
+		            }
+	            allLogs.push(log);
+	            if (allLogs.length > 1000) allLogs.shift();  // Keep max 1000 logs in memory
+
+	            const color = log.type === 'incident' ? '#fbbf24' :
+	                         log.type === 'systemd' ? '#a78bfa' :
+	                         log.type === 'socat' ? '#60a5fa' : '#10b981';
+	            const line = document.createElement('div');
+	            line.style.color = color;
+	            line.textContent = log.message;
+	            logsDiv.appendChild(line);
+
+	            // Keep a decent on-screen history without growing forever.
+	            const maxVisible = 200;
+	            while (logsDiv.children.length > maxVisible) {
+	              logsDiv.removeChild(logsDiv.firstChild);
+	            }
+
+	            // Auto-scroll only if user is already near bottom.
+	            const nearBottom = (logsDiv.scrollHeight - logsDiv.scrollTop - logsDiv.clientHeight) < 80;
+	            if (nearBottom) logsDiv.scrollTop = logsDiv.scrollHeight;
+	          }
+	        } catch (e) {
+	          console.error('[logs] Parse error:', e);
+	        }
+	      };
+
+      logStream.onerror = (e) => {
+        console.error('[logs] Stream error:', e);
+        if (logStream) {
+          logStream.close();
+          logStream = null;
+        }
+
+        logsDiv.innerHTML = '<div style="color:#ef4444">❌ Connection lost</div>';
+        logRetryCount++;
+
+        // Exponential backoff: 2s, 4s, 8s, 16s, 30s max
+        const retryDelay = Math.min(2000 * Math.pow(2, logRetryCount - 1), 30000);
+        const retrySeconds = Math.round(retryDelay / 1000);
+        logsDiv.innerHTML += `<div style="color:var(--text-3);font-size:0.8em">Retrying in ${retrySeconds}s...</div>`;
+
+        if (logRetryCount < 15 && adminMode) {
+          logRetryTimer = setTimeout(() => streamLogs(), retryDelay);
+        } else if (logRetryCount >= 15) {
+          logsDiv.innerHTML = '<div style="color:#ef4444">❌ Connection failed (too many retries)</div>';
+        }
+      };
+    } catch (e) {
+      console.error('[logs] Failed to start stream:', e);
+      logsDiv.innerHTML = '<div style="color:var(--danger)">❌ Error: ' + e.message + '</div>';
+    }
+  }
+
+	  async function restartService(portId, localPort) {
+    const serviceName = 'homelinkwg-socat-' + localPort;
+    const confirmed = confirm(`Restart service "${serviceName}"?`);
+    if (!confirmed) return;
+
+    const token = getSessionToken();
+    if (!token) {
+      alert('Session expired. Please login again.');
+      adminMode = false;
+      updateAdminUI();
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/restart-service?token=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceName })
+      });
+
+      if (response.status === 401) {
+        alert('Session expired. Please login again.');
+        adminMode = false;
+        updateAdminUI();
+        return;
+      }
+
+      if (!response.ok) {
+        const error = await response.json();
+        const errorMsg = error.error || 'Failed to restart service';
+        console.error('Restart service error:', errorMsg);
+        alert('❌ ' + errorMsg);
+        return;
+      }
+
+      const result = await response.json();
+      alert('Service restarted: ' + result.message);
+      // Refresh status immediately
+      setTimeout(refresh, 500);
+    } catch (e) {
+      alert('Error: ' + e.message);
+    }
+  }
+
+  // Check session on page load
+		  async function checkSession() {
+		    const prevAdminMode = adminMode;
+		    const token = getSessionToken();
+		    if (!token) {
+		      adminMode = false;
+		      updateAdminUI();
+		      return;
+		    }
+
+    try {
+      const response = await fetch(`/api/verify_session?token=${encodeURIComponent(token)}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Session check failed');
+      const payload = await response.json();
+      adminMode = !!payload.valid;
+    } catch (e) {
+      adminMode = false;
+    }
+
+	    if (!adminMode) {
+	      sessionStorage.removeItem(SESSION_KEY);
+	      sessionStorage.removeItem(SESSION_EXPIRY_KEY);
+	    }
+
+		    updateAdminUI();
+		    if (prevAdminMode !== adminMode) {
+		      resetServiceUI();
+		      // Token/mode changed: restart status stream so the server delivers the right view immediately.
+		      startStatusStream();
+		      // And refresh once to rebuild the UI without requiring a full page reload.
+		      refreshOnce().catch(() => {});
+		    }
+		  }
+
+		  function openSettingsModal() {
+		    const modal = $('settings-modal');
+		    if (!modal) return;
+		    modal.classList.add('show');
+		    if (!thresholdSyncInitialized) {
+		      syncThreshold('latency-slider', 'latency-input');
+		      syncThreshold('uptime-slider', 'uptime-input');
+		      syncThreshold('timeout-slider', 'timeout-input');
+		      thresholdSyncInitialized = true;
+		    }
+		    loadThresholds();
+		    syncPerfSettingsUI();
+		    load2faStatus();
+		    loadConfigEditor();
+		    if (typeof loadCurrentMode === 'function') loadCurrentMode();
+		  }
+
+  // ── 2FA settings ─────────────────────────────────────────────────────────
+
+  async function load2faStatus() {
+    try {
+      const r = await fetch('/api/2fa/status', { cache: 'no-store' });
+      if (!r.ok) return;
+      const d = await r.json();
+      const badge   = $('twofa-badge');
+      const btn     = $('twofa-toggle-btn');
+      const unavail = $('twofa-unavailable');
+      if (!d.available) {
+        if (unavail) unavail.style.display = '';
+        if (badge)   { badge.textContent = 'unavailable'; badge.className = 'badge muted'; }
+        if (btn)     btn.style.display = 'none';
+        return;
+      }
+      if (unavail) unavail.style.display = 'none';
+      if (badge) {
+        badge.textContent = d.enabled ? 'enabled' : 'disabled';
+        badge.className   = d.enabled ? 'badge ok' : 'badge ko';
+      }
+      if (btn) {
+        btn.style.display  = '';
+        btn.textContent    = d.enabled ? 'Disable 2FA' : 'Set up 2FA';
+        btn.className      = d.enabled ? 'maint-btn' : 'maint-btn unmute';
+      }
+    } catch (_) {}
+  }
+
+  async function toggle2fa() {
+    const badge = $('twofa-badge');
+    if (badge && badge.textContent === 'enabled') await disable2fa();
+    else await open2faSetup();
+  }
+
+  async function open2faSetup() {
+    const token = getSessionToken();
+    if (!token) return;
+    const box = $('twofa-setup-box');
+    const msg = $('twofa-setup-msg');
+    if (!box) return;
+    if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+    if ($('twofa-code-input')) $('twofa-code-input').value = '';
+    box.style.display = '';
+    try {
+      const r = await fetch('/api/2fa/setup?token=' + encodeURIComponent(token), { cache: 'no-store' });
+      const d = await r.json();
+      if (!r.ok) {
+        if (msg) { msg.textContent = d.error || 'Setup failed'; msg.style.color = 'var(--danger)'; msg.style.display = ''; }
+        return;
+      }
+      if ($('twofa-secret')) $('twofa-secret').textContent = d.secret;
+      if ($('twofa-uri'))    $('twofa-uri').textContent    = d.uri;
+      window._2faSetupSecret = d.secret;
+      // Display QR code (server-generated base64 PNG)
+      const qrEl = document.getElementById('twofa-qr-inner');
+      if (qrEl) {
+        qrEl.innerHTML = '';
+        if (d.qr) {
+          const img = document.createElement('img');
+          img.src = d.qr;
+          img.style.cssText = 'width:180px;height:180px;display:block';
+          img.alt = 'QR code 2FA';
+          qrEl.appendChild(img);
+        } else {
+          qrEl.style.cssText = 'font-size:.75rem;color:var(--text-3);padding:10px;text-align:center;max-width:220px';
+          qrEl.textContent = 'QR indisponible — installe qrcode[pil] : pip install "qrcode[pil]" --break-system-packages';
+        }
+      }
+    } catch (e) {
+      if (msg) { msg.textContent = 'Setup failed: ' + e.message; msg.style.color = 'var(--danger)'; msg.style.display = ''; }
+    }
+  }
+
+  async function confirm2faSetup() {
+    const token  = getSessionToken();
+    const code   = $('twofa-code-input') ? $('twofa-code-input').value.trim() : '';
+    const secret = window._2faSetupSecret;
+    const msg    = $('twofa-setup-msg');
+    if (!token || !code || !secret) {
+      if (msg) { msg.textContent = 'Enter the 6-digit code first'; msg.style.color = 'var(--amber)'; msg.style.display = ''; }
+      return;
+    }
+    try {
+      const r = await fetch('/api/2fa/enable?token=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret, code })
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        if (msg) { msg.textContent = d.error || 'Invalid code'; msg.style.color = 'var(--danger)'; msg.style.display = ''; }
+        return;
+      }
+      if ($('twofa-setup-box')) $('twofa-setup-box').style.display = 'none';
+      if (msg) { msg.textContent = '✓ 2FA enabled'; msg.style.color = 'var(--accent-2)'; msg.style.display = ''; }
+      load2faStatus();
+    } catch (e) {
+      if (msg) { msg.textContent = 'Error: ' + e.message; msg.style.color = 'var(--danger)'; msg.style.display = ''; }
+    }
+  }
+
+  async function disable2fa() {
+    const token = getSessionToken();
+    if (!token) return;
+    if (!confirm('Disable two-factor authentication?')) return;
+    try {
+      const r = await fetch('/api/2fa/disable?token=' + encodeURIComponent(token), { method: 'POST' });
+      if (r.ok) {
+        if ($('twofa-setup-box')) $('twofa-setup-box').style.display = 'none';
+        load2faStatus();
+      }
+    } catch (_) {}
+  }
+
+
+		  function resetServiceUI() {
+		    // Reset service UI so a mode switch (public <-> admin / light <-> normal)
+		    // redraws correctly. Chart.js leaks event listeners + ResizeObserver
+		    // entries if we only call destroy() — we also have to detach the
+		    // canvas from the DOM and let the chart object be garbage-collected.
+		    for (const key in chartInstances) {
+		      const ch = chartInstances[key];
+		      if (!ch) continue;
+		      try { ch.stop && ch.stop(); } catch (e) {}
+		      try { ch.clear && ch.clear(); } catch (e) {}
+		      try {
+		        if (ch.canvas && ch.canvas.parentNode) {
+		          // Replace canvas with a clone — drops every attached listener.
+		          const clone = ch.canvas.cloneNode(false);
+		          ch.canvas.parentNode.replaceChild(clone, ch.canvas);
+		        }
+		      } catch (e) {}
+		      try { ch.destroy(); } catch (e) {}
+		      chartInstances[key] = null;
+		    }
+		    chartInstances = {};
+		    const container = $('services-container');
+		    if (container) container.innerHTML = '';
+		    serviceMetrics = {};
+		    expandedCharts.clear();
+		    lastAnalyticsRefresh = 0;
+		  }
+
+		  // Best-effort GC trigger when the user toggles ultra-light: in dev tools
+		  // this pairs with the resetServiceUI cleanup above to make leaks visible.
+		  function _scheduleChartGC() {
+		    if (window.gc) { try { window.gc(); } catch (e) {} }
+		  }
+
+		  // ── Theme management ──────────────────────────────────────────────────────
+  // Button toggles dark <-> light directly. 'auto' is only the startup default.
+  const ICON_LIGHT = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  const ICON_DARK  = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+
+  function applyTheme(pref) {
+    if (pref !== 'dark' && pref !== 'light') {
+      const sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      pref = sysDark ? 'dark' : 'light';
+    }
+    const html = document.documentElement;
+    const body = document.body;
+    html.setAttribute('data-theme', pref);
+    if (body) body.setAttribute('data-theme', pref);
+    try { localStorage.setItem('fs-theme', pref); } catch(_) {}
+    const icon = document.getElementById('theme-icon');
+    const btn  = document.getElementById('theme-toggle-btn');
+    const isDark = pref === 'dark';
+    // Show the icon of the mode the user will switch TO (clearer affordance).
+    if (icon) icon.innerHTML = isDark ? ICON_LIGHT : ICON_DARK;
+    if (btn)  btn.title = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+  }
+
+  function cycleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme');
+    applyTheme(cur === 'light' ? 'dark' : 'light');
+  }
+
+  // Init theme on load
+  (function initTheme() {
+    let pref = 'auto';
+    try { pref = localStorage.getItem('fs-theme') || 'auto'; } catch(_) {}
+    applyTheme(pref);
+  })();
+
+  // ── Inactivity / session timeout ───────────────────────────────────────────
+  let _sessionTimeoutMs = 30 * 60 * 1000; // default 30 min, overridden by loadThresholds
+  let _lastActivity     = Date.now();
+  let _warnedTimeout    = false;
+  let _idleCheckInterval = null;
+
+  function _resetActivity() {
+    _lastActivity  = Date.now();
+    _warnedTimeout = false;
+    const toast = document.getElementById('idle-toast');
+    if (toast) toast.style.display = 'none';
+  }
+
+  ['mousemove','keydown','click','touchstart','scroll'].forEach(ev =>
+    document.addEventListener(ev, _resetActivity, { passive: true })
+  );
+
+  function _startIdleCheck() {
+    if (_idleCheckInterval) return;
+    _idleCheckInterval = setInterval(() => {
+      if (!getSessionToken()) return; // not logged in, nothing to do
+      const idle = Date.now() - _lastActivity;
+      const warnAt = _sessionTimeoutMs - 2 * 60 * 1000; // warn 2 min before
+      if (idle >= _sessionTimeoutMs) {
+        // Auto-logout
+        clearInterval(_idleCheckInterval); _idleCheckInterval = null;
+        const toast = document.getElementById('idle-toast');
+        if (toast) toast.style.display = 'none';
+        fetch('/api/logout?token=' + encodeURIComponent(getSessionToken()), { method: 'POST' }).catch(() => {});
+        sessionStorage.removeItem('admin_token');
+        checkSession();
+        // Show brief message
+        const alert = document.getElementById('alert');
+        const alertText = document.getElementById('alert-text');
+        if (alert && alertText) {
+          alertText.textContent = 'Session expired — logged out due to inactivity.';
+          alert.style.display = '';
+          setTimeout(() => { if (alert) alert.style.display = 'none'; }, 5000);
+        }
+      } else if (!_warnedTimeout && idle >= warnAt && _sessionTimeoutMs > 2 * 60 * 1000) {
+        _warnedTimeout = true;
+        const remaining = Math.round((_sessionTimeoutMs - idle) / 60000);
+        const toast = document.getElementById('idle-toast');
+        if (toast) {
+          document.getElementById('idle-toast-text').textContent =
+            `Idle — logging out in ${remaining} min. Move the mouse to stay connected.`;
+          toast.style.display = '';
+        }
+      }
+    }, 15000); // check every 15s
+  }
+
+  // ── Restart dashboard ─────────────────────────────────────────────────────
+  async function changePassword() {
+    const current = $('chpw-current').value.trim();
+    const newPw    = $('chpw-new').value;
+    const confirm_ = $('chpw-confirm').value;
+    const msg      = $('chpw-msg');
+    const show = (text, color) => { msg.textContent = text; msg.style.color = color; msg.style.display = ''; };
+
+    if (!current || !newPw || !confirm_) return show('All fields are required.', 'var(--danger)');
+    if (newPw.length < 8)                return show('New password must be at least 8 characters.', 'var(--danger)');
+    if (newPw !== confirm_)              return show('Passwords do not match.', 'var(--danger)');
+
+    const token = getSessionToken();
+    if (!token) return show('Not logged in.', 'var(--danger)');
+
+    show('Updating…', 'var(--text-2)');
+    try {
+      const r = await fetch('/api/change-password?token=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_password: current, new_password: newPw })
+      });
+      const d = await r.json();
+      if (r.ok) {
+        show('✓ Password updated successfully.', 'var(--ok)');
+        $('chpw-current').value = '';
+        $('chpw-new').value = '';
+        $('chpw-confirm').value = '';
+      } else {
+        show(d.error || 'Error updating password.', 'var(--danger)');
+      }
+    } catch(e) {
+      show('Network error.', 'var(--danger)');
+    }
+  }
+
+  // ── Performance diagnostic ────────────────────────────────────────────────
+  async function runPerfDiagnostic() {
+    const btn    = $('perf-diag-btn');
+    const status = $('perf-diag-status');
+    const results= $('perf-diag-results');
+    const banner = $('perf-verdict-banner');
+    const rows   = $('perf-test-rows');
+    const recoBox= $('perf-recommendations');
+    const recoList=$('perf-reco-list');
+
+    const token = getSessionToken();
+    if (!token) return;
+
+    // Reset UI
+    btn.disabled = true;
+    btn.textContent = '⏳ Running…';
+    status.textContent = 'Testing disk, network, CPU and memory… (~15 s)';
+    status.style.color = 'var(--text-2)';
+    status.style.display = '';
+    results.style.display = 'none';
+    rows.innerHTML = '';
+    recoBox.style.display = 'none';
+    recoList.innerHTML = '';
+
+    try {
+      const r = await fetch('/api/performance-check?token=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const d = await r.json();
+
+      if (!r.ok) {
+        status.textContent = d.error || 'Diagnostic failed.';
+        status.style.color = 'var(--danger)';
+        btn.disabled = false;
+        btn.textContent = '▶ Run diagnostic';
+        return;
+      }
+
+      // ── Verdict banner ────────────────────────────────────────────────────
+      const v = d.verdict || {};
+      // severity from backend is "ok" | "warning" | "critical"
+      const sevMap = { ok: 0, warning: 1, critical: 2 };
+      const sev = sevMap[v.severity] ?? 0;
+      const bannerColors = [
+        { bg: 'rgba(16,185,129,.12)',  border: 'var(--ok, #10b981)',   text: 'var(--ok, #10b981)' },
+        { bg: 'rgba(245,158,11,.12)',  border: 'var(--warn, #f59e0b)', text: 'var(--warn, #f59e0b)' },
+        { bg: 'rgba(239,68,68,.12)',   border: 'var(--danger, #ef4444)', text: 'var(--danger, #ef4444)' },
+      ];
+      const bc = bannerColors[sev];
+      const icons = ['✅', '⚠️', '🚫'];
+      banner.style.background    = bc.bg;
+      banner.style.borderColor   = bc.border;
+      banner.style.color         = bc.text;
+      const mainLabel = v.bottleneck
+        ? { network:'Network', cpu_throttle:'CPU throttling', cpu_temp:'CPU temperature', disk:'Disk', memory:'Memory' }[v.bottleneck] || v.bottleneck
+        : 'All systems good';
+      banner.innerHTML = `<strong>${icons[sev]} ${mainLabel}</strong><br>
+        <span style="color:var(--text-2);font-size:.78rem">${v.message || ''}</span>`;
+
+      // ── Build test rows from per-category data ─────────────────────────────
+      const statusSev = s => ({ ok: 0, slow: 1, critical: 2, unknown: 0 }[s] ?? 0);
+      const sevIcon  = s => ['✅','⚠️','🚫'][Math.min(s,2)];
+      const sevColor = s => ['var(--ok, #10b981)','var(--warn, #f59e0b)','var(--danger, #ef4444)'][Math.min(s,2)];
+
+      const addRow = (name, value, detail, sevN) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:var(--surface);border-radius:var(--r-sm);border:1px solid var(--border-2)';
+        row.innerHTML = `
+          <span style="font-size:1rem;line-height:1.4">${sevIcon(sevN)}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;color:${sevColor(sevN)}">${name}</div>
+            <div style="color:var(--text-2);margin-top:2px">${value}</div>
+            ${detail ? `<div style="color:var(--text-3);font-size:.74rem;margin-top:2px">${detail}</div>` : ''}
+          </div>`;
+        rows.appendChild(row);
+      };
+
+      // Network
+      if (d.network) {
+        const n = d.network;
+        const nSev = statusSev(n.status);
+        const nType = n.type || 'Unknown';
+        const nVal = n.interface ? `${n.interface} — ${nType}` : nType;
+        addRow('Network', nVal, n.speed ? `Link speed: ${n.speed}` : '', nSev);
+      }
+      // Disk
+      if (d.disk) {
+        const k = d.disk;
+        const dSev = statusSev(k.status);
+        let dVal = k.read_mbps != null ? `Read: ${k.read_mbps} MB/s` + (k.write_mbps != null ? `, Write: ${k.write_mbps} MB/s` : '') : (k.error || 'Could not measure');
+        if (k.w_await_ms != null) dVal += `, Write latency: ${k.w_await_ms} ms`;
+        const dDetail = k.w_await_note || (dSev === 2 ? 'SD card may be limiting streaming' : dSev === 1 ? 'Disk is slower than recommended' : '');
+        addRow('Disk I/O', dVal, dDetail, dSev);
+      }
+      // CPU
+      if (d.cpu) {
+        const c = d.cpu;
+        const cSev = statusSev(c.status);
+        let cVal = c.usage_percent != null ? `Usage: ${c.usage_percent}%` : 'N/A';
+        if (c.iowait_percent != null && c.iowait_percent > 5) cVal += `, I/O wait: ${c.iowait_percent}%`;
+        if (c.temp_c != null) cVal += `, Temp: ${c.temp_c}°C`;
+        let cDetails = [];
+        if (c.throttled) cDetails.push('⚠️ CPU throttled — reduce temperature');
+        if (c.cpu_explanation) cDetails.push(`ℹ️ ${c.cpu_explanation}`);
+        if (c.top_processes && c.top_processes.length > 0) {
+          const procList = c.top_processes.map(p => `<strong>${p.name}</strong> ${p.cpu_percent}%`).join(' &nbsp;·&nbsp; ');
+          cDetails.push(`Top consumers: ${procList}`);
+        }
+        addRow('CPU', cVal, cDetails.join('<br>'), cSev);
+      }
+      // Memory
+      if (d.memory) {
+        const m = d.memory;
+        const mSev = statusSev(m.status);
+        const mVal = m.used_mb != null ? `${m.used_mb} MB / ${m.total_mb} MB (${m.percent}%)` : 'N/A';
+        addRow('Memory', mVal, '', mSev);
+      }
+
+      // ── Recommendations ───────────────────────────────────────────────────
+      const recos = d.recommendations || [];
+      if (recos.length > 0) {
+        recos.forEach(rec => {
+          const li = document.createElement('li');
+          li.textContent = rec;
+          recoList.appendChild(li);
+        });
+        recoBox.style.display = '';
+      }
+
+      results.style.display = '';
+      status.style.display = 'none';
+    } catch(e) {
+      status.textContent = 'Network error running diagnostic.';
+      status.style.color = 'var(--danger)';
+    }
+
+    btn.disabled = false;
+    btn.textContent = '▶ Run diagnostic';
+  }
+
+  async function restartDashboard() {
+    if (!confirm('Restart HomelinkWG? The page will reload automatically once the service is back up.')) return;
+    const token = getSessionToken();
+    if (!token) return;
+    const msg = $('restart-dashboard-msg');
+    if (msg) { msg.textContent = 'Restarting…'; msg.style.color = 'var(--amber)'; msg.style.display = ''; }
+    try {
+      await fetch('/api/restart-dashboard', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
+    } catch(_) {}
+    // Poll /api/healthz until back up
+    if (msg) msg.textContent = 'Waiting for service to come back up…';
+    let attempts = 0;
+    const poll = setInterval(async () => {
+      attempts++;
+      try {
+        const r = await fetch('/api/healthz', { cache: 'no-store' });
+        if (r.ok) { clearInterval(poll); location.reload(); }
+      } catch(_) {}
+      if (attempts > 30) { clearInterval(poll); if (msg) { msg.textContent = 'Timeout — please reload manually.'; msg.style.color = 'var(--danger)'; } }
+    }, 2000);
+  }
+
+  // ── Sessions history ───────────────────────────────────────────────────────
+  async function loadSessionsHistory() {
+    const token = getSessionToken();
+    const el = $('sessions-history-list');
+    if (!el) return;
+    if (!token) { el.innerHTML = '<span style="color:var(--text-3)">Not authenticated</span>'; return; }
+    try {
+      const r = await fetch('/api/sessions?token=' + encodeURIComponent(token), { cache: 'no-store' });
+      if (!r.ok) { el.innerHTML = '<span style="color:var(--danger)">Failed to load</span>'; return; }
+      const d = await r.json();
+      const sessions = d.sessions || [];
+      if (!sessions.length) { el.innerHTML = '<span style="color:var(--text-3)">No sessions found</span>'; return; }
+      const now = Math.floor(Date.now() / 1000);
+      el.innerHTML = sessions.map(s => {
+        const created = new Date(s.created_at * 1000).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' });
+        const active  = s.expires_at > now;
+        const badge   = active
+          ? '<span style="color:var(--accent-2);font-weight:600">active</span>'
+          : '<span style="color:var(--text-3)">expired</span>';
+        const ua = s.user_agent ? s.user_agent.replace(/\(.*?\)/g,'').trim().substring(0,60) : '—';
+        return '<div style="display:flex;gap:10px;flex-wrap:wrap;padding:4px 0;border-bottom:1px solid var(--border);font-family:monospace;font-size:.77rem">'
+          + '<span style="color:var(--text-3);min-width:130px">' + created + '</span>'
+          + '<span style="min-width:110px;color:var(--text-2)">' + (s.ip_address || '—') + '</span>'
+          + badge
+          + '<span style="color:var(--text-3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + ua + '</span>'
+          + '</div>';
+      }).join('');
+    } catch(e) {
+      if (el) el.innerHTML = '<span style="color:var(--danger)">Erreur: ' + e.message + '</span>';
+    }
+  }
+
+  // ── Audit log ──────────────────────────────────────────────────────────────
+  let _auditRows = [];
+
+  async function loadAuditLog() {
+    const token = getSessionToken();
+    if (!token) return;
+    const el = $('audit-log-list');
+    if (!el) return;
+    try {
+      const r = await fetch('/api/audit-log?token=' + encodeURIComponent(token), { cache: 'no-store' });
+      if (!r.ok) { el.innerHTML = '<span style="color:var(--danger)">Erreur chargement</span>'; return; }
+      const d = await r.json();
+      _auditRows = d.entries || [];
+      renderAuditLog(_auditRows);
+    } catch(e) {
+      if (el) el.innerHTML = '<span style="color:var(--danger)">Erreur: ' + e.message + '</span>';
+    }
+  }
+
+  function filterAuditLog() {
+    const q = ($('audit-search').value || '').toLowerCase();
+    renderAuditLog(q ? _auditRows.filter(r =>
+      (r.action+r.admin+r.target+(r.details||'')+r.status).toLowerCase().includes(q)
+    ) : _auditRows);
+  }
+
+  function renderAuditLog(rows) {
+    const el = $('audit-log-list');
+    if (!el) return;
+    if (!rows.length) { el.innerHTML = '<span style="color:var(--text-3)">No entries</span>'; return; }
+    const ACTION_COLOR = { success:'var(--accent-2)', failed:'var(--danger)', partial:'var(--amber)' };
+    el.innerHTML = rows.map(r => {
+      const dt = new Date(r.timestamp * 1000).toLocaleString('en-GB', { dateStyle:'short', timeStyle:'medium' });
+      const col = ACTION_COLOR[r.status] || 'var(--text-2)';
+      const det = r.details ? ' <span style="color:var(--text-3)">' + r.details + '</span>' : '';
+      return '<div style="padding:4px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap">'
+        + '<span style="color:var(--text-3);min-width:130px">' + dt + '</span>'
+        + '<span style="color:' + col + ';min-width:130px;font-weight:600">' + r.action + '</span>'
+        + '<span style="color:var(--text-2)">' + (r.admin || '—') + '</span>'
+        + '<span style="color:var(--text-3)">' + (r.target || '') + det + '</span>'
+        + '</div>';
+    }).join('');
+  }
+
+  // ── Config backup ───────────────────────────────────────────────────────────
+  function downloadConfigBackup() {
+    const token = getSessionToken();
+    if (!token) return;
+    const a = document.createElement('a');
+    a.href = '/api/config/backup?token=' + encodeURIComponent(token);
+    a.download = 'homelinkwg-backup.zip';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // ── Diagnostic bundle ───────────────────────────────────────────────────────
+  function downloadDiagnosticBundle(fmt) {
+    const token = getSessionToken();
+    if (!token) return;
+    const msg = document.getElementById('diag-bundle-msg');
+    if (msg) { msg.textContent = 'Génération en cours…'; msg.style.color = 'var(--text-2)'; }
+    const url = '/api/diagnostic-bundle?format=' + encodeURIComponent(fmt) +
+                '&token=' + encodeURIComponent(token);
+    const a = document.createElement('a');
+    a.href = url;
+    const stamp = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 19);
+    a.download = 'homelinkwg-diagnostic-' + stamp + (fmt === 'zip' ? '.zip' : '.json');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => { if (msg) { msg.textContent = 'Téléchargement déclenché.'; msg.style.color = 'var(--accent-2)'; } }, 600);
+  }
+
+  async function loadCurrentMode() {
+    const token = getSessionToken();
+    if (!token) return;
+    try {
+      const r = await fetch('/api/mode?token=' + encodeURIComponent(token), { cache: 'no-store' });
+      if (!r.ok) return;
+      const d = await r.json();
+      const cur = d.mode || 'normal';
+      document.querySelectorAll('#mode-btns .maint-btn').forEach(btn => {
+        const isCur = btn.dataset.mode === cur;
+        btn.classList.toggle('unmute', isCur);
+        btn.style.fontWeight = isCur ? '700' : '';
+      });
+      const st = document.getElementById('mode-status');
+      if (st) {
+        const adapt = d.adaptive || {};
+        let label = 'Mode actuel : <strong>' + cur.toUpperCase() + '</strong>';
+        if (adapt.active && cur !== 'ultra') {
+          label += ' — auto-override <strong>ULTRA</strong> actif (' + (adapt.reason || 'CPU élevé') + ')';
+          st.style.color = '#d97706';
+        } else {
+          st.style.color = 'var(--text-2)';
+        }
+        st.innerHTML = label;
+      }
+    } catch (e) { /* silent */ }
+  }
+
+  async function setDashboardMode(mode) {
+    const token = getSessionToken();
+    if (!token) return;
+    const st = document.getElementById('mode-status');
+    if (st) { st.textContent = 'Application…'; st.style.color = 'var(--text-2)'; }
+    try {
+      const r = await fetch('/api/mode?token=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: mode })
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+      // Force a fresh status fetch so the badge + refresh interval update.
+      try { resetServiceUI(); _scheduleChartGC(); } catch (e) {}
+      try { await refreshOnce(); } catch (e) {}
+      await loadCurrentMode();
+    } catch (e) {
+      if (st) {
+        st.textContent = 'Erreur: ' + (e && e.message || e);
+        st.style.color = 'var(--danger)';
+      }
+    }
+  }
+
+  async function runHealthCheck() {
+    const token = getSessionToken();
+    if (!token) return;
+    const box = document.getElementById('health-check-result');
+    if (box) { box.style.display = 'block'; box.innerHTML = 'Analyse en cours…'; }
+    try {
+      const r = await fetch('/api/health-score?token=' + encodeURIComponent(token), { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      const colorFor = (lvl) => lvl === 'critical' ? 'var(--danger)' : lvl === 'warn' ? '#d97706' : 'var(--accent-2)';
+      const overall = d.overall || 'ok';
+      const checks = (d.checks || []);
+      let html = '<div style="padding:8px 10px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border);">';
+      html += '<div style="font-weight:600;color:' + colorFor(overall) + '">Verdict global: ' + overall.toUpperCase() + '</div>';
+      if (!checks.length) {
+        html += '<div style="margin-top:6px;color:var(--text-2)">Aucun problème détecté.</div>';
+      } else {
+        html += '<ul style="margin:6px 0 0 16px;padding:0;color:var(--text-2)">';
+        checks.forEach(c => {
+          html += '<li><span style="color:' + colorFor(c.level) + ';font-weight:600">[' + c.level + ']</span> ' + (c.msg || c.key) + '</li>';
+        });
+        html += '</ul>';
+      }
+      html += '</div>';
+      if (box) box.innerHTML = html;
+    } catch (e) {
+      if (box) box.innerHTML = '<span style="color:var(--danger)">Erreur: ' + (e && e.message || e) + '</span>';
+    }
+  }
+
+  async function runLatencyAudit() {
+    const token = getSessionToken();
+    if (!token) return;
+    const box = document.getElementById('latency-audit-result');
+    if (box) { box.style.display = 'block'; box.innerHTML = 'Mesure de la latence (probes en cours, ~3-5 s)…'; }
+    try {
+      const r = await fetch('/api/latency-insights?token=' + encodeURIComponent(token), { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      const colorMs = (ms) => {
+        if (ms == null) return 'var(--text-3)';
+        if (ms < 30) return 'var(--accent-2)';
+        if (ms < 100) return '#d97706';
+        return 'var(--danger)';
+      };
+      let html = '<div style="padding:8px 10px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border);">';
+      // Per-port breakdown
+      html += '<div style="font-weight:600;margin-bottom:6px">Latence par port (5 échantillons)</div>';
+      if (!(d.ports || []).length) {
+        html += '<div style="color:var(--text-2)">Aucun port actif.</div>';
+      } else {
+        html += '<table style="width:100%;border-collapse:collapse;font-size:.75rem">';
+        html += '<tr style="color:var(--text-3);text-align:left"><th>Port</th><th>DNS</th><th>TCP avg</th><th>P95</th><th>Jitter</th><th>Conn.</th><th>Verdict</th></tr>';
+        d.ports.forEach(p => {
+          const b = p.breakdown || {};
+          if (!b.ok) {
+            html += '<tr><td>' + p.name + '</td><td colspan="6" style="color:var(--danger)">' + (b.error || 'failed') + '</td></tr>';
+            return;
+          }
+          const verdict = b.tcp_ms_avg < 30 ? 'OK' : b.tcp_ms_avg < 100 ? 'CORRECT' : 'LENT';
+          html += '<tr>'
+            + '<td>' + p.name + '</td>'
+            + '<td style="color:' + colorMs(b.dns_ms) + '">' + (b.dns_ms ?? '-') + 'ms</td>'
+            + '<td style="color:' + colorMs(b.tcp_ms_avg) + '">' + b.tcp_ms_avg + 'ms</td>'
+            + '<td>' + b.tcp_ms_p95 + 'ms</td>'
+            + '<td style="color:' + (b.jitter_ms > 30 ? 'var(--danger)' : 'var(--text-2)') + '">' + b.jitter_ms + 'ms</td>'
+            + '<td>' + (p.socat_connections ?? '-') + '</td>'
+            + '<td style="color:' + colorMs(b.tcp_ms_avg) + ';font-weight:600">' + verdict + '</td>'
+            + '</tr>';
+        });
+        html += '</table>';
+      }
+      // WG diagnostic
+      const wg = d.wg_diagnostic || {};
+      html += '<div style="margin-top:10px;font-weight:600">WireGuard</div>';
+      html += '<div style="color:var(--text-2)">MTU WG=' + (wg.wg_mtu || '?')
+            + ', iface défaut=' + (wg.default_iface || '?')
+            + ' MTU=' + (wg.default_iface_mtu || '?')
+            + (wg.endpoints ? ', endpoints=' + wg.endpoints.join(',') : '')
+            + '</div>';
+      if (wg.recommendation_mtu) html += '<div style="color:#d97706">⚠️ ' + wg.recommendation_mtu + '</div>';
+      if (wg.recommendation_keepalive) html += '<div style="color:#d97706">⚠️ ' + wg.recommendation_keepalive + '</div>';
+      // CPU governor
+      const gov = d.cpu_governor || {};
+      if (gov.governor) {
+        const govColor = gov.governor === 'performance' ? 'var(--accent-2)' : '#d97706';
+        html += '<div style="margin-top:8px">CPU governor: <span style="color:' + govColor + ';font-weight:600">' + gov.governor + '</span>'
+              + (gov.freq_cur_mhz ? ' @ ' + gov.freq_cur_mhz + 'MHz / max ' + (gov.freq_max_mhz || '?') + 'MHz' : '')
+              + '</div>';
+        if (gov.recommendation) html += '<div style="color:#d97706">⚠️ ' + gov.recommendation + '</div>';
+      }
+      // NTP
+      const ntp = d.ntp || {};
+      if (ntp.synced !== null) {
+        const ntpColor = ntp.synced ? 'var(--accent-2)' : 'var(--danger)';
+        html += '<div style="margin-top:8px">NTP: <span style="color:' + ntpColor + '">' + (ntp.synced ? 'synced' : 'NOT synced') + '</span>'
+              + (ntp.offset_ms != null ? ' (offset ' + ntp.offset_ms + 'ms)' : '')
+              + (ntp.source ? ' via ' + ntp.source : '')
+              + '</div>';
+      }
+      // Kernel tunables
+      const kt = d.kernel_net_tunables || {};
+      if (Object.keys(kt).length) {
+        html += '<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--text-2)">Kernel net tunables</summary>'
+              + '<pre style="font-size:.7rem;background:var(--bg);padding:6px;border-radius:4px;margin-top:4px;white-space:pre-wrap">'
+              + Object.entries(kt).map(([k,v]) => k + ' = ' + v).join('\n')
+              + '</pre></details>';
+      }
+      html += '</div>';
+      if (box) box.innerHTML = html;
+    } catch (e) {
+      if (box) box.innerHTML = '<span style="color:var(--danger)">Erreur: ' + (e && e.message || e) + '</span>';
+    }
+  }
+
+  function exportMetricsCSV() {
+    const token = getSessionToken();
+    if (!token) return;
+    const tf = document.querySelector('.timeframe-btn.active');
+    const days = tf ? (tf.dataset.timeframe === '7d' ? 7 : tf.dataset.timeframe === '30d' ? 30 : 1) : 1;
+    const url = '/api/metrics/export?token=' + encodeURIComponent(token) + '&days=' + days;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'homelinkwg-metrics.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  async function loadConfigEditor() {
+    const token = getSessionToken();
+    if (!token) return;
+    const ta = $('config-editor-textarea');
+    const msg = $('config-editor-msg');
+    if (!ta) return;
+    try {
+      const r = await fetch('/api/config?token=' + encodeURIComponent(token), { cache: 'no-store' });
+      const d = await r.json();
+      if (!r.ok) { if (msg) { msg.textContent = d.error || 'Failed to load'; msg.style.color='var(--danger)'; msg.style.display=''; } return; }
+      ta.value = JSON.stringify(d.config, null, 2);
+      ta.style.borderColor = 'var(--border-2)';
+      if ($('config-json-error')) $('config-json-error').style.display = 'none';
+      if (msg) { msg.style.display = 'none'; }
+    } catch(e) {
+      if (msg) { msg.textContent = 'Erreur: ' + e.message; msg.style.color='var(--danger)'; msg.style.display=''; }
+    }
+  }
+
+  function validateConfigJSON(ta) {
+    const errEl = $('config-json-error');
+    try {
+      JSON.parse(ta.value);
+      ta.style.borderColor = 'var(--border-2)';
+      if (errEl) errEl.style.display = 'none';
+      return true;
+    } catch(e) {
+      ta.style.borderColor = 'var(--danger)';
+      if (errEl) { errEl.textContent = e.message; errEl.style.display = ''; }
+      return false;
+    }
+  }
+
+  async function saveConfig() {
+    const token = getSessionToken();
+    if (!token) return;
+    const ta = $('config-editor-textarea');
+    const msg = $('config-editor-msg');
+    if (!ta) return;
+    if (!validateConfigJSON(ta)) return;
+    let parsed;
+    try { parsed = JSON.parse(ta.value); } catch(_) { return; }
+    const btn = $('config-save-btn');
+    if (btn) btn.disabled = true;
+    try {
+      const r = await fetch('/api/config?token=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: parsed })
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        if (msg) { msg.textContent = d.error || 'Save failed'; msg.style.color='var(--danger)'; msg.style.display=''; }
+      } else {
+        if (msg) { msg.textContent = '✓ Config saved — refreshing…'; msg.style.color='var(--accent-2)'; msg.style.display=''; }
+        setTimeout(() => { if (msg) msg.style.display='none'; }, 3000);
+        await refresh({ restartStream: false });
+      }
+    } catch(e) {
+      if (msg) { msg.textContent = 'Erreur: ' + e.message; msg.style.color='var(--danger)'; msg.style.display=''; }
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function closeSettingsModal() {
+		    const modal = $('settings-modal');
+		    if (!modal) return;
+		    modal.classList.remove('show');
+		  }
+
+		  function syncPerfSettingsUI() {
+		    const perf = $('perf-section');
+		    if (perf) perf.style.display = runtimeUltraLight ? '' : 'none';
+		    const cb = $('toggle-live-logs');
+		    if (cb) {
+		      cb.checked = isLiveLogsEnabled();
+		      cb.onchange = () => setLiveLogsEnabled(!!cb.checked);
+		    }
+		  }
+
+	  // Click outside closes settings modal.
+		  const settingsModalEl = document.getElementById('settings-modal');
+		  if (settingsModalEl) {
+		    settingsModalEl.addEventListener('click', (e) => {
+		      if (e.target === settingsModalEl) closeSettingsModal();
+		    });
+		  }
+
+		  // Click outside closes What's new modal.
+		  const whatsNewModalEl = document.getElementById('whatsnew-modal');
+		  if (whatsNewModalEl) {
+		    whatsNewModalEl.addEventListener('click', (e) => {
+		      if (e.target === whatsNewModalEl) closeWhatsNew();
+		    });
+		  }
+
+		  function toggleCharts(portId) {
+		    const chartsDiv = document.getElementById(`charts-${portId}`);
+		    const arrow = document.getElementById(`toggle-arrow-${portId}`);
+		    if (!chartsDiv || !arrow) return;
+
+		    const opening = (chartsDiv.style.display === 'none' || chartsDiv.style.display === '');
+		    if (opening) {
+		      chartsDiv.style.display = 'grid';
+		      arrow.textContent = '▲';
+		      expandedCharts.add(portId);
+		      // Lazy-load metrics only when the user expands.
+		      ensureChartsLoaded(portId);
+		    } else {
+		      chartsDiv.style.display = 'none';
+		      arrow.textContent = '▼';
+		      expandedCharts.delete(portId);
+		    }
+		  }
+
+		  async function ensureChartsLoaded(portId) {
+		    if (metricsFetchInFlight[portId]) return metricsFetchInFlight[portId];
+		    const chartsDiv = document.getElementById(`charts-${portId}`);
+		    if (!chartsDiv) return;
+
+		    // Build chart DOM only once (keeps base DOM small for low-power devices).
+		    if (!chartsDiv.dataset.built) {
+		      chartsDiv.dataset.built = '1';
+		      const heatmapBlock = runtimeUltraLight ? '' : `
+		        <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px;grid-column:1/-1">
+		          <div style="font-size:0.75em;color:var(--text-3);font-weight:600;margin-bottom:8px">Daily Availability Heatmap</div>
+		          <div id="heatmap-${portId}" style="display:flex;gap:3px;flex-wrap:wrap;align-items:flex-start"></div>
+		        </div>
+		      `;
+
+		      chartsDiv.innerHTML = `
+		        <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px">
+		          <div style="font-size:0.75em;color:var(--text-3);font-weight:600;margin-bottom:6px">Availability Trend</div>
+		          <div style="position:relative;height:150px">
+		            <canvas id="chart-avail-${portId}" style="width:100%;height:100%"></canvas>
+		          </div>
+		        </div>
+		        <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px">
+		          <div style="font-size:0.75em;color:var(--text-3);font-weight:600;margin-bottom:6px">Latency Trend (ms)</div>
+		          <div style="position:relative;height:150px">
+		            <canvas id="chart-latency-${portId}" style="width:100%;height:100%"></canvas>
+		          </div>
+		        </div>
+		        ${heatmapBlock}
+		      `;
+		    }
+
+		    metricsFetchInFlight[portId] = (async () => {
+		      try {
+		        const metricsRes = await fetch(`/api/metrics?port_id=${encodeURIComponent(portId)}&timeframe=${encodeURIComponent(selectedTimeframe)}`, { cache: 'no-store' });
+		        if (!metricsRes.ok) return;
+	        const metrics = await metricsRes.json();
+	        serviceMetrics[portId] = serviceMetrics[portId] || {};
+	        serviceMetrics[portId].metrics = metrics.metrics || [];
+	        drawChart(portId, serviceMetrics[portId].metrics);
+	        lastAnalyticsRefresh = Date.now();
+	      } catch (e) {
+	        // Keep UI calm on low-power devices; failing charts should not break status updates.
+	      } finally {
+	        delete metricsFetchInFlight[portId];
+	      }
+	    })();
+	    return metricsFetchInFlight[portId];
+	  }
+
+	  async function startDiagnose(portId) {
+    const diagDiv = document.getElementById(`diagnose-${portId}`);
+    const resultDiv = document.getElementById(`diagnose-results-${portId}`);
+
+    if (!diagDiv) return;
+
+	    diagDiv.style.display = 'block';
+	    resultDiv.innerHTML = '<div style="color:var(--text-3)">Starting diagnostics…</div>';
+
+	    try {
+      const token = getSessionToken();
+      if (!token) {
+        resultDiv.innerHTML = '<div style="color:#fca5a5">✗ Login as admin to run diagnostics.</div>';
+        return;
+      }
+      const url = `/api/diagnose?port_id=${encodeURIComponent(portId)}&token=${encodeURIComponent(token)}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        let errMsg = 'HTTP ' + response.status;
+        try { const j = await response.json(); if (j && j.error) errMsg = j.error; } catch(_) {}
+        resultDiv.innerHTML = `<div style="color:#fca5a5">✗ ${errMsg}</div>`;
+        return;
+      }
+      resultDiv.innerHTML = '';
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        // SSE messages are separated by blank lines; lines by \n.
+        let nlIdx;
+        while ((nlIdx = buffer.indexOf('\n')) !== -1) {
+          const line = buffer.slice(0, nlIdx);
+          buffer = buffer.slice(nlIdx + 1);
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.substring(6));
+              const statusIcon = data.status === 'ok' ? '✓' : (data.status === 'fail' ? '✗' : '⟳');
+              const statusColor = data.status === 'ok' ? '#6ee7b7' : (data.status === 'fail' ? '#fca5a5' : '#94a3b8');
+              resultDiv.innerHTML += `<div style="color:${statusColor}">${statusIcon} ${data.message}</div>`;
+
+	              // Add analysis summary at the end
+	              if (data.step === 'complete') {
+	                resultDiv.innerHTML += `<div style="color:#94a3b8;margin-top:8px;border-top:1px solid #2d3748;padding-top:8px">─ ANALYSIS ─</div>`;
+	                if (data.segments) {
+	                  const local = data.segments.local_ms;
+	                  const tunnel = data.segments.tunnel_ms;
+	                  const target = data.segments.target_ms;
+	                  const bottleneckLabel = data.bottleneck === 'vpn_path' ? 'VPN path' :
+	                                        data.bottleneck === 'local_path' ? 'Local path' :
+	                                        data.bottleneck === 'target_path' ? 'Target path' :
+	                                        data.bottleneck === 'service' ? 'Service process' :
+	                                        data.bottleneck === 'target_unreachable' ? 'Target unreachable' :
+	                                        'Insufficient data';
+	                  resultDiv.innerHTML += `<div style="color:#a78bfa">Latency breakdown:</div>`;
+	                  resultDiv.innerHTML += `<div>  local->socat: ${local !== null ? local.toFixed(1) + 'ms' : 'n/a'}</div>`;
+	                  resultDiv.innerHTML += `<div>  wg path est.: ${tunnel !== null ? tunnel.toFixed(1) + 'ms' : 'n/a'}</div>`;
+	                  resultDiv.innerHTML += `<div>  wg->target:   ${target !== null ? target.toFixed(1) + 'ms' : 'n/a'}</div>`;
+	                  resultDiv.innerHTML += `<div style="color:#fbbf24;margin-top:6px">Bottleneck: ${bottleneckLabel}</div>`;
+	                }
+
+	                // Update service status badges with diagnostic results
+	                if (data.target_reachable !== undefined) {
+                  const targetBadgeEl = document.getElementById(`badge-target-${portId}`);
+                  if (targetBadgeEl) {
+                    const newStatus = data.target_reachable ? 'reachable' : 'unreachable';
+                    targetBadgeEl.textContent = 'target ' + newStatus;
+                    targetBadgeEl.className = 'badge ' + (data.target_reachable ? 'ok' : 'muted');
+                  }
+                }
+              }
+
+              resultDiv.parentElement.scrollTop = resultDiv.parentElement.scrollHeight;
+            } catch (e) {
+              // Ignore parse errors
+            }
+          }
+        }
+      }
+    } catch (e) {
+      resultDiv.innerHTML = `<div style="color:#fca5a5">✗ Error: ${e.message}</div>`;
+    }
+  }
+
+  function renderDiag(d, summary) {
+    const root = $("diag");
+    root.innerHTML = "";
+
+    // Ultra-light mode: all values are null \u2192 show neutral state + on-demand button
+    const allNull = d && Object.values(d).every(v => v === null || v === undefined);
+    if (allNull) {
+      root.innerHTML = `
+        <div style="grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);flex-wrap:wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span style="font-size:.82rem;color:var(--text-3);flex:1;min-width:180px">Diagnostics disabled in ultra-light mode (expensive TCP probes).</span>
+          <button id="diag-force-btn" class="maint-btn" onclick="checkConnectivity()" style="font-size:.78rem;padding:5px 12px;min-height:0;flex-shrink:0">
+            &#9654; Check now
+          </button>
+        </div>`;
+      return;
+    }
+
+    const entries = [
+      ["Internet", d.internet, "OK", "down"],
+      ["WireGuard IP", d.wg_ip, "assigned", "missing"],
+      ["Routes", d.routes, "configured", "missing"],
+      ["WG recent activity", d.wg_handshake_recent, "recent", "idle"],
+    ];
+    for (const [label, ok, yes, no] of entries) {
+      const cell = document.createElement("div");
+      cell.className = "cell" + (ok ? " ok" : "");
+      const k = document.createElement("div"); k.className = "k"; k.textContent = label;
+      const v = document.createElement("div"); v.className = "v"; v.textContent = ok ? "\u2713 " + yes : "\u2717 " + no;
+      cell.appendChild(k); cell.appendChild(v);
+      root.appendChild(cell);
+    }
+    if (summary && summary.message) {
+      const note = document.createElement("div");
+      note.style.gridColumn = "1/-1";
+      note.style.marginTop = "8px";
+      note.style.padding = "10px";
+      note.style.borderRadius = "6px";
+      note.style.background = summary.code === "healthy" ? "var(--ok-bg)" : "var(--danger-dim)";
+      note.style.color = summary.code === "healthy" ? "#6ee7b7" : "#fca5a5";
+      note.textContent = `Probable cause: ${summary.message}`;
+      root.appendChild(note);
+    }
+  }
+
+  async function checkConnectivity() {
+    const btn = $("diag-force-btn");
+    if (btn) { btn.disabled = true; btn.textContent = "\u2026"; }
+    try {
+      const token = getSessionToken();
+      const r = await fetch("/api/connectivity-check?token=" + encodeURIComponent(token), { method: "POST" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const data = await r.json();
+      renderDiag(data.diagnostics, data.diagnostics_summary);
+    } catch(e) {
+      const root = $("diag");
+      if (root) root.innerHTML += `<div style="grid-column:1/-1;font-size:.78rem;color:var(--danger);margin-top:6px">Erreur : ${e.message}</div>`;
+      if (btn) { btn.disabled = false; btn.textContent = "\u25b6 Check now"; }
+    }
+  }
+
+	  function renderPublicServices(ports) {
+	    const container = $("services-container");
+	    if (!container) return;
+	    const list = ports || [];
+
+	    // Empty state
+	    if (list.length === 0) {
+	      container.innerHTML = `
+	        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;gap:16px;color:var(--text-3);text-align:center">
+	          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".4" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+	          <div style="font-size:.85rem;font-weight:600;color:var(--text-2)">No services configured</div>
+	          <div style="font-size:.78rem;max-width:320px;line-height:1.6">Add port-forward entries to <code style="font-family:monospace;background:var(--surface);padding:2px 6px;border-radius:4px;font-size:.75rem">config.json</code> to see them here.</div>
+	        </div>`;
+	      return;
+	    }
+
+	    // Fast path: update existing cards in place to avoid DOM churn on tiny machines.
+	    let okToPatch = (container.children.length === list.length);
+	    if (okToPatch) {
+	      for (let i = 0; i < list.length; i++) {
+	        const port = list[i];
+	        const el = container.children[i];
+	        if (!el || el.dataset.port !== String(port.local_port || "")) { okToPatch = false; break; }
+	        const dot = el.querySelector(".dot");
+	        const badge = el.querySelector(".badge");
+	        const dotClass = port.overall_status === "ACTIVE" ? "ok" : "ko";
+	        if (dot) dot.className = "dot " + dotClass;
+	        if (badge) {
+	          badge.className = "badge " + (dotClass === "ok" ? "ok" : "ko");
+	          badge.textContent = "status " + String(port.overall_status || "").toLowerCase();
+	        }
+	      }
+	      if (okToPatch) return;
+	    }
+
+	    container.innerHTML = "";
+	    const frag = document.createDocumentFragment();
+	    for (const port of list) {
+	      const card = document.createElement("div");
+	      card.className = "service-analytics";
+	      card.dataset.port = String(port.local_port || "");
+	      const dotClass = port.overall_status === "ACTIVE" ? "ok" : "ko";
+	      card.innerHTML = `
+	        <h3><span class="dot ${dotClass}"></span>${port.name}</h3>
+	        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+	          <span class="badge ${dotClass === 'ok' ? 'ok' : 'ko'}">status ${String(port.overall_status || '').toLowerCase()}</span>
+	        </div>
+	      `;
+	      frag.appendChild(card);
+	    }
+	    container.appendChild(frag);
+	  }
+
+	  async function loadServiceAnalytics(portData) {
+	    const portId = "port-" + portData.local_port;
+	    // Guard: prevent duplicate cards from concurrent refreshOnce() calls.
+	    if (document.getElementById('service-' + portId)) return;
+	    const readOnlyPublic = (!adminMode && publicReadOnly);
+	    try {
+	      // In lightweight/optimal mode, do NOT fetch metrics for every service.
+	      // We only fetch metrics when the user expands a service.
+	      let uptime = null;
+	      if (portData && portData.stats_24h) {
+	        uptime = portData.stats_24h;
+	      } else {
+	        const uptimeRes = await fetch(`/api/uptime?port_id=${encodeURIComponent(portId)}`, { cache: 'no-store' });
+	        if (uptimeRes.status === 503) {
+	          uptime = { samples: 0, uptime_24h_percent: 0, avg_latency_ms: null };
+	        } else if (uptimeRes.ok) {
+	          uptime = await uptimeRes.json();
+	        }
+	      }
+
+	      if (!uptime) {
+	        const container = $("services-container");
+	        const serviceDiv = document.createElement("div");
+	        serviceDiv.id = `service-${portId}`;
+	        serviceDiv.className = "service-analytics";
+
+        const dotClass = portData.overall_status === 'ACTIVE' ? 'ok' : 'ko';
+	        serviceDiv.innerHTML = `
+	          <h3><span class="dot ${dotClass}"></span>${portData.name} (port ${portData.local_port})</h3>
+	          <div class="service-desc">${readOnlyPublic ? 'Read-only public mode' : `${portData.description || ''} → ${portData.remote_host}:${portData.remote_port}`}</div>
+	          <div style="display:grid;grid-template-columns:300px 1fr;gap:30px;align-items:start">
+	            <div>
+	              <div style="margin-bottom:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+	                ${readOnlyPublic
+                    ? `<span class="badge ${dotClass === 'ok' ? 'ok' : 'ko'}" style="white-space:nowrap">status ${portData.overall_status.toLowerCase()}</span>`
+                    : `<span class="badge ${portData.service_active ? 'ok' : 'ko'}" style="white-space:nowrap">service ${portData.service_active ? 'active' : 'inactive'}</span>
+	                <span class="badge ${portData.port_active ? 'ok' : 'ko'}" style="white-space:nowrap">port ${portData.port_active ? 'listening' : 'down'}</span>
+	                <span class="badge ${portData.target_reachable ? 'ok' : 'muted'}" style="white-space:nowrap">target ${portData.target_reachable ? 'reachable' : 'unreachable'}</span>`}
+	              </div>
+	              <div style="background:var(--bg);border:1px solid var(--border);padding:12px;border-radius:6px;color:var(--text-3);font-size:0.9em;text-align:center">
+	                No analytics data yet
+	              </div>
+	            </div>
+	          </div>
+	        `;
+		        container.appendChild(serviceDiv);
+		        applyAdminVisibility(serviceDiv);
+		        return;
+		      }
+
+	      serviceMetrics[portId] = serviceMetrics[portId] || {};
+	      serviceMetrics[portId].uptime = uptime;
+
+	      const container = $("services-container");
+	      const serviceDiv = document.createElement("div");
+	      serviceDiv.id = `service-${portId}`;
+	      serviceDiv.className = "service-analytics";
+
+      const dotClass = portData.overall_status === 'ACTIVE' ? 'ok' : 'ko';
+      const serviceBadge = portData.service_active ? 'ok' : 'ko';
+      const serviceText = portData.service_active ? 'active' : 'inactive';
+      const portBadge = portData.port_active ? 'ok' : 'ko';
+      const portText = portData.port_active ? 'listening' : 'down';
+      const targetBadge = portData.target_reachable ? 'ok' : 'muted';
+      const targetText = portData.target_reachable ? 'reachable' : 'unreachable';
+
+	      const uptimeDisplay = uptime.samples > 0 ? uptime.uptime_24h_percent + '%' : 'No data';
+	      const latencyDisplay = uptime.samples > 0 && uptime.avg_latency_ms !== null ? Number(uptime.avg_latency_ms).toFixed(1) + ' ms' : '---';
+	      const uptimeTrend = renderUptimeTrendFromCode(uptime.uptime_trend);
+	      const latencyTrend = renderLatencyTrendFromCode(uptime.latency_trend);
+
+		      serviceDiv.innerHTML = `
+		        <h3><span class="dot ${dotClass}"></span>${portData.name} (port ${portData.local_port})</h3>
+		        <div class="service-desc">${readOnlyPublic ? 'Read-only public mode' : `${portData.description || ''} → ${portData.remote_host}:${portData.remote_port}`}</div>
+
+	        <div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center" id="badges-${portId}">
+	          ${readOnlyPublic
+                ? `<span class="badge ${dotClass === 'ok' ? 'ok' : 'ko'}" style="white-space:nowrap">status ${portData.overall_status.toLowerCase()}</span>`
+                : `<span class="badge ${serviceBadge}" id="badge-service-${portId}" style="white-space:nowrap">service ${serviceText}</span>
+	          <span class="badge ${portBadge}" id="badge-port-${portId}" style="white-space:nowrap">port ${portText}</span>
+	          <span class="badge ${targetBadge}" id="badge-target-${portId}" style="white-space:nowrap">target ${targetText}</span>
+	          ${portData.has_incident ? '<span class="badge" style="background:#dc2626;color:white;white-space:nowrap" id="badge-incident-' + portId.split('-')[1] + '">INCIDENT</span>' : ''}`}
+	        </div>
+
+	        <div class="toggle-bar" style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:16px;cursor:pointer" onclick="toggleCharts('${portId}')">
+	          <div style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:4px">
+	            <div style="font-size:0.8em;color:var(--text);font-weight:600">
+	              <span style="color:var(--accent-2);font-size:1.1em" id="uptime-val-${portId}">${uptimeDisplay}</span> <span id="uptime-trend-${portId}">${uptimeTrend}</span> uptime · <span style="color:var(--accent-2);font-size:1.1em" id="latency-val-${portId}">${latencyDisplay}</span> <span id="latency-trend-${portId}">${latencyTrend}</span> latency
+	            </div>
+	            <div id="toggle-arrow-${portId}" class="toggle-arrow" style="color:var(--text-3);font-size:0.9em">▼</div>
+	          </div>
+	        </div>
+
+	        <div id="charts-${portId}" style="display:none;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;margin-top:-8px"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+          <button onclick="startDiagnose('${portId}')" style="padding:12px;background:var(--accent);color:var(--bg);border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.9em">
+            Test Connection
+          </button>
+	          <button class="admin-only" onclick="restartService('${portId}', '${portData.local_port}')" style="padding:12px;background:#8b5cf6;color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.9em">
+	            🔄 Restart Service
+	          </button>
+        </div>
+
+        <div id="diagnose-${portId}" style="display:none;margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:16px">
+          <div style="font-size:0.9em;color:var(--text-3);margin-bottom:12px;font-weight:600">Running Diagnostics...</div>
+          <div id="diagnose-results-${portId}" style="font-size:0.85em;font-family:monospace;color:var(--text);line-height:1.6"></div>
+        </div>
+	      `;
+		      container.appendChild(serviceDiv);
+		      applyAdminVisibility(serviceDiv);
+		    } catch (e) {
+		      console.error("Failed to load analytics for", portId, e);
+		    }
+		  }
+
+		  function _canvasCtx(canvas) {
+		    if (!canvas) return null;
+		    const rect = canvas.getBoundingClientRect();
+		    const cssW = Math.max(1, Math.floor(rect.width));
+		    const cssH = Math.max(1, Math.floor(rect.height));
+		    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+		    const w = Math.max(1, Math.floor(cssW * dpr));
+		    const h = Math.max(1, Math.floor(cssH * dpr));
+		    if (canvas.width !== w || canvas.height !== h) {
+		      canvas.width = w;
+		      canvas.height = h;
+		    }
+		    const ctx = canvas.getContext('2d');
+		    if (!ctx) return null;
+		    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		    return { ctx, w: cssW, h: cssH };
+		  }
+
+		  let _chartTooltipEl = null;
+		  function _getTooltipEl() {
+		    if (_chartTooltipEl) return _chartTooltipEl;
+		    const el = document.createElement('div');
+		    el.style.position = 'fixed';
+		    el.style.zIndex = '3500';
+		    el.style.pointerEvents = 'none';
+		    el.style.padding = '6px 8px';
+		    el.style.borderRadius = '6px';
+		    el.style.background = 'rgba(15,23,42,0.92)';
+		    el.style.border = '1px solid rgba(148,163,184,0.25)';
+		    el.style.color = '#e2e8f0';
+		    el.style.fontSize = '12px';
+		    el.style.fontFamily = '-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,sans-serif';
+		    el.style.boxShadow = '0 10px 24px rgba(0,0,0,0.35)';
+		    el.style.display = 'none';
+		    document.body.appendChild(el);
+		    _chartTooltipEl = el;
+		    return el;
+		  }
+
+		  function _formatTs(ts) {
+		    if (!ts) return '';
+		    try { return new Date(ts * 1000).toLocaleString(); } catch (e) { return ''; }
+		  }
+
+		  function _attachTooltip(canvas, payloadFn, onHoverIdx) {
+		    if (!canvas || canvas.dataset.tooltipBound === '1') return;
+		    canvas.dataset.tooltipBound = '1';
+		    const tip = _getTooltipEl();
+
+		    const hide = () => {
+		      tip.style.display = 'none';
+		      if (onHoverIdx) onHoverIdx(null);
+		    };
+		    canvas.addEventListener('mouseleave', hide);
+		    canvas.addEventListener('blur', hide);
+
+		    canvas.addEventListener('mousemove', (ev) => {
+		      const rect = canvas.getBoundingClientRect();
+		      const x = ev.clientX - rect.left;
+		      const y = ev.clientY - rect.top;
+		      // Ignore if outside.
+		      if (x < 0 || y < 0 || x > rect.width || y > rect.height) { hide(); return; }
+		      const p = payloadFn(x, rect.width);
+		      if (!p) { hide(); return; }
+		      tip.textContent = p.text || '';
+		      tip.style.display = 'block';
+		      if (onHoverIdx && (p.idx === 0 || p.idx)) onHoverIdx(p.idx);
+		      // place near cursor, keep in viewport
+		      const pad = 10;
+		      let left = ev.clientX + pad;
+		      let top = ev.clientY + pad;
+		      const tw = tip.offsetWidth || 180;
+		      const th = tip.offsetHeight || 28;
+		      if (left + tw > window.innerWidth - 6) left = ev.clientX - tw - pad;
+		      if (top + th > window.innerHeight - 6) top = ev.clientY - th - pad;
+		      tip.style.left = left + 'px';
+		      tip.style.top = top + 'px';
+		    }, { passive: true });
+
+		    // Tap to show on touch devices.
+		    canvas.addEventListener('click', (ev) => {
+		      const rect = canvas.getBoundingClientRect();
+		      const x = ev.clientX - rect.left;
+		      const p = payloadFn(x, rect.width);
+		      if (!p) { hide(); return; }
+		      tip.textContent = p.text || '';
+		      tip.style.display = 'block';
+		      if (onHoverIdx && (p.idx === 0 || p.idx)) onHoverIdx(p.idx);
+		      tip.style.left = (ev.clientX + 10) + 'px';
+		      tip.style.top = (ev.clientY + 10) + 'px';
+		      setTimeout(hide, 1800);
+		    }, { passive: true });
+		  }
+
+		  function _drawLineChart(canvas, values, opts) {
+		    const c = _canvasCtx(canvas);
+		    if (!c) return;
+		    const ctx = c.ctx;
+		    const w = c.w, h = c.h;
+		    const pad = 10;
+		    const axisH = 16;
+		    const axisW = 32;
+		    const innerW = Math.max(1, w - pad * 2 - axisW);
+		    const innerH = Math.max(1, h - pad * 2 - axisH);
+		    const originX = pad + axisW;
+		    const originY = pad;
+
+		    ctx.clearRect(0, 0, w, h);
+
+		    // background grid (very light)
+		    ctx.strokeStyle = 'rgba(148,163,184,0.12)';
+		    ctx.lineWidth = 1;
+		    ctx.beginPath();
+		    ctx.moveTo(originX, originY + innerH);
+		    ctx.lineTo(originX + innerW, originY + innerH);
+		    ctx.stroke();
+
+		    const clean = values.filter(v => v !== null && v !== undefined && !Number.isNaN(v));
+		    if (clean.length < 2) return;
+
+		    const vMin = (opts && opts.min !== undefined) ? opts.min : Math.min(...clean);
+		    const vMax = (opts && opts.max !== undefined) ? opts.max : Math.max(...clean);
+		    const span = Math.max(1e-9, vMax - vMin);
+
+		    const xStep = innerW / Math.max(1, values.length - 1);
+		    const xFor = (i) => originX + i * xStep;
+		    const yFor = (v) => {
+		      const t = (v - vMin) / span;
+		      return originY + (1 - t) * innerH;
+		    };
+
+		    // Axes labels (minimal, cheap)
+		    ctx.fillStyle = 'rgba(148,163,184,0.85)';
+		    ctx.font = '11px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+		    ctx.textBaseline = 'middle';
+		    ctx.textAlign = 'right';
+		    ctx.fillText(String(Math.round(vMax)), originX - 6, originY + 6);
+		    ctx.fillText(String(Math.round(vMin)), originX - 6, originY + innerH);
+
+		    // X ticks (use timestamps if provided)
+		    const ts = (opts && opts.timestamps) ? opts.timestamps : null;
+		    const tickCount = 4;
+		    ctx.textBaseline = 'top';
+		    ctx.textAlign = 'center';
+		    for (let k = 0; k < tickCount; k++) {
+		      const t = tickCount === 1 ? 0 : (k / (tickCount - 1));
+		      const idx = Math.max(0, Math.min(values.length - 1, Math.round(t * (values.length - 1))));
+		      const x = xFor(idx);
+		      let label = '';
+		      if (ts && ts[idx]) {
+		        try { label = new Date(ts[idx] * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) {}
+		      }
+		      if (!label) label = String(idx);
+		      ctx.fillText(label, x, originY + innerH + 4);
+		    }
+
+		    // fill
+		    if (opts && opts.fill) {
+		      ctx.fillStyle = opts.fill;
+		      ctx.beginPath();
+		      let started = false;
+		      for (let i = 0; i < values.length; i++) {
+		        const v = values[i];
+		        if (v === null || v === undefined || Number.isNaN(v)) continue;
+		        const x = xFor(i), y = yFor(v);
+		        if (!started) { ctx.moveTo(x, y); started = true; }
+		        else ctx.lineTo(x, y);
+		      }
+		      ctx.lineTo(originX + innerW, originY + innerH);
+		      ctx.lineTo(originX, originY + innerH);
+		      ctx.closePath();
+		      ctx.fill();
+		    }
+
+		    // line
+		    ctx.strokeStyle = (opts && opts.stroke) ? opts.stroke : '#10b981';
+		    ctx.lineWidth = (opts && opts.width) ? opts.width : 2;
+		    ctx.beginPath();
+		    let started = false;
+		    for (let i = 0; i < values.length; i++) {
+		      const v = values[i];
+		      if (v === null || v === undefined || Number.isNaN(v)) continue;
+		      const x = xFor(i), y = yFor(v);
+		      if (!started) { ctx.moveTo(x, y); started = true; }
+		      else ctx.lineTo(x, y);
+		    }
+		    ctx.stroke();
+
+		    // Hover marker (vertical line + point)
+		    const hoverIdxRaw = (opts && opts.hoverIdx !== undefined) ? opts.hoverIdx : null;
+		    const hoverIdx = (hoverIdxRaw === 0 || hoverIdxRaw) ? hoverIdxRaw : null;
+		    if (hoverIdx !== null && hoverIdx >= 0 && hoverIdx < values.length) {
+		      const v = values[hoverIdx];
+		      if (v !== null && v !== undefined && !Number.isNaN(v)) {
+		        const x = xFor(hoverIdx);
+		        const y = yFor(v);
+		        ctx.strokeStyle = 'rgba(148,163,184,0.35)';
+		        ctx.lineWidth = 1;
+		        ctx.beginPath();
+		        ctx.moveTo(x, originY);
+		        ctx.lineTo(x, originY + innerH);
+		        ctx.stroke();
+
+		        ctx.fillStyle = (opts && opts.stroke) ? opts.stroke : '#10b981';
+		        ctx.beginPath();
+		        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+		        ctx.fill();
+		        ctx.strokeStyle = 'rgba(15,23,42,0.9)';
+		        ctx.lineWidth = 2;
+		        ctx.stroke();
+		      }
+		    }
+		  }
+
+		  function drawChart(portId, metrics) {
+		    if (!metrics || metrics.length === 0) return;
+
+		    const timestamps = metrics.map(m => m.timestamp || null);
+		    const latency = metrics.map(m => (m.latency_ms >= 0 ? m.latency_ms : null));
+		    const availability = metrics.map(m => (m.service_active && m.port_listening && m.target_reachable) ? 100 : 0);
+
+		    const canvasAvail = document.getElementById(`chart-avail-${portId}`);
+		    const canvasLatency = document.getElementById(`chart-latency-${portId}`);
+
+		    // Store latest data ON the canvas so tooltip closures always read fresh arrays,
+		    // even after new data points arrive without a page reload.
+		    if (canvasAvail)   canvasAvail._chartData   = { availability, timestamps };
+		    if (canvasLatency) canvasLatency._chartData = { latency, timestamps };
+
+		    const scheduleRedraw = () => {
+		      if (!serviceMetrics[portId] || !serviceMetrics[portId].metrics) return;
+		      if (serviceMetrics[portId]._rafPending) return;
+		      serviceMetrics[portId]._rafPending = true;
+		      requestAnimationFrame(() => {
+		        serviceMetrics[portId]._rafPending = false;
+		        drawChart(portId, serviceMetrics[portId].metrics);
+		      });
+		    };
+		    const setHover = (idx) => {
+		      if (canvasAvail) {
+		        if (idx === null || idx === undefined) delete canvasAvail.dataset.hoverIdx;
+		        else canvasAvail.dataset.hoverIdx = String(idx);
+		      }
+		      if (canvasLatency) {
+		        if (idx === null || idx === undefined) delete canvasLatency.dataset.hoverIdx;
+		        else canvasLatency.dataset.hoverIdx = String(idx);
+		      }
+		      scheduleRedraw();
+		    };
+
+		    // payloadFns read from canvas._chartData so they always use the latest arrays.
+		    _attachTooltip(canvasAvail, (x, w) => {
+		      const d = canvasAvail && canvasAvail._chartData;
+		      if (!d || !w || w <= 1 || d.availability.length < 2) return null;
+		      const idx = Math.max(0, Math.min(d.availability.length - 1, Math.round((x / w) * (d.availability.length - 1))));
+		      const status = d.availability[idx] === 100 ? '✓ UP' : '✗ DOWN';
+		      const t = _formatTs(d.timestamps[idx]);
+		      return { text: (t ? `${status} · ${t}` : status), idx };
+		    }, setHover);
+		    _drawLineChart(canvasAvail, availability, {
+		      min: 0,
+		      max: 100,
+		      stroke: '#10b981',
+		      fill: 'rgba(16,185,129,0.12)',
+		      width: 2,
+		      timestamps,
+		      hoverIdx: (canvasAvail && canvasAvail.dataset.hoverIdx) ? parseInt(canvasAvail.dataset.hoverIdx, 10) : null,
+		    });
+
+		    const nonNullLatency = latency.filter(v => v !== null && v !== undefined && !Number.isNaN(v));
+		    const maxLatency = nonNullLatency.length ? Math.max(...nonNullLatency) : 50;
+		    _attachTooltip(canvasLatency, (x, w) => {
+		      const d = canvasLatency && canvasLatency._chartData;
+		      if (!d || !w || w <= 1 || d.latency.length < 2) return null;
+		      const idx = Math.max(0, Math.min(d.latency.length - 1, Math.round((x / w) * (d.latency.length - 1))));
+		      const v = d.latency[idx];
+		      const val = (v === null || v === undefined || Number.isNaN(v)) ? 'N/A' : (Number(v).toFixed(1) + ' ms');
+		      const t = _formatTs(d.timestamps[idx]);
+		      return { text: (t ? `${val} · ${t}` : val), idx };
+		    }, setHover);
+		    _drawLineChart(canvasLatency, latency, {
+		      min: 0,
+		      max: Math.ceil(Math.max(10, maxLatency * 1.2)),
+		      stroke: '#a78bfa',
+		      fill: 'rgba(167,139,250,0.10)',
+		      width: 2,
+		      timestamps,
+		      hoverIdx: (canvasLatency && canvasLatency.dataset.hoverIdx) ? parseInt(canvasLatency.dataset.hoverIdx, 10) : null,
+		    });
+
+		    // Heatmap is relatively DOM-heavy; skip in ultra-light.
+		    if (!runtimeUltraLight) drawHeatmap(portId, metrics);
+		  }
+
+		  async function applySnapshot(s) {
+		    if (!s || s.error) throw new Error(s && s.error ? s.error : 'Invalid status payload');
+		    publicReadOnly = !!(s.runtime && s.runtime.public_read_only);
+		    const wasUltra = runtimeUltraLight;
+		    const wasLight = runtimeLightMode;
+		    runtimeLightMode = !!(s.runtime && s.runtime.light_mode);
+		    runtimeUltraLight = !!(s.runtime && s.runtime.ultra_light);
+		    // Mode change → tear down charts to prevent Chart.js memory leak.
+		    if (wasUltra !== runtimeUltraLight || wasLight !== runtimeLightMode) {
+		      try { resetServiceUI(); _scheduleChartGC(); } catch (e) {}
+		    }
+		    document.body.classList.toggle('light', runtimeLightMode);
+		    document.body.classList.toggle('ultra', runtimeUltraLight);
+		    const lb = $('light-badge');
+		    if (lb) lb.style.display = (runtimeLightMode && !runtimeUltraLight) ? '' : 'none';
+		    const ub = $('ultra-badge');
+		    if (ub) {
+		      ub.style.display = runtimeUltraLight ? '' : 'none';
+		      const refreshS = Math.round((s.runtime && s.runtime.refresh_ms || 30000) / 1000);
+		      const adapt = s.runtime && s.runtime.ultra_light_adaptive;
+		      let title = 'Mode ultra-light: refresh ' + refreshS + 's, diagnostics réduits';
+		      if (adapt && adapt.active && adapt.reason) {
+		        title += ' (auto: ' + adapt.reason + ')';
+		        ub.textContent = '🔥 ULTRA-AUTO';
+		      } else {
+		        ub.textContent = '🔥 ULTRA';
+		      }
+		      ub.title = title;
+		    }
+		    syncPerfSettingsUI();
+
+    const loaderEl = $("loader-overlay");
+    if (loaderEl && !loaderEl.classList.contains("hidden")) loaderEl.classList.add("hidden");
+
+    $("alert").style.display = "none";
+
+    const connected = s.vpn.status === "CONNECTED";
+    $("vpn-dot").className = "dot " + (connected ? "ok" : "ko");
+    const vb = $("vpn-badge");
+    vb.textContent = s.vpn.status;
+    vb.className = "badge " + (connected ? "ok" : "ko");
+    $("vpn-iface").textContent = s.vpn.interface;
+    $("vpn-ip").textContent = s.vpn.ip;
+
+    $("sys-cpu").textContent = s.system.cpu;
+    $("sys-mem").textContent = s.system.memory;
+    $("sys-load").textContent = s.system.load;
+    $("sys-up").textContent = s.system.uptime;
+    // Disk latency
+    if (s.system.disk) {
+      const dk = s.system.disk;
+      const dlEl = $("sys-disk-latency");
+      if (dlEl) {
+        const wa = dk.w_await_ms;
+        if (wa === 0 || wa == null) {
+          dlEl.textContent = "idle";
+          dlEl.style.color = "";
+        } else {
+          dlEl.textContent = `${wa} ms write`;
+          dlEl.style.color = wa > 500 ? "var(--danger, #ef4444)"
+                           : wa > 100 ? "var(--warn, #f59e0b)"
+                           : "var(--ok, #10b981)";
+        }
+      }
+    }
+    if (s.host_network) {
+      const iface = s.host_network.interface || "N/A";
+      const type  = s.host_network.type  || "";
+      const speed = s.host_network.speed || "N/A";
+      $("sys-net-iface").textContent = type ? `${iface} (${type})` : iface;
+      $("sys-net-iface").style.color = type.includes("WiFi") ? "var(--warn, #f59e0b)" : "";
+      $("sys-net-speed").textContent = speed;
+    }
+
+    $("net-rx").textContent = s.network.rx;
+    $("net-tx").textContent = s.network.tx;
+
+    renderDiag(s.diagnostics, s.diagnostics_summary);
+    renderMuteBanner(s.alerts || null);
+
+    const container = $("services-container");
+    if (!adminMode && publicReadOnly) {
+      renderPublicServices(s.ports);
+      $("last-update").textContent = s.timestamp;
+      return;
+    }
+
+    const nowMs = Date.now();
+    const shouldRefreshAnalytics = (nowMs - lastAnalyticsRefresh) >= ANALYTICS_REFRESH_MS;
+
+	    if (s.ports && s.ports.length === 0 && container.children.length === 0) {
+	      container.innerHTML = `
+	        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 24px;gap:16px;color:var(--text-3);text-align:center">
+	          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".4" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+	          <div style="font-size:.85rem;font-weight:600;color:var(--text-2)">No services configured</div>
+	          <div style="font-size:.78rem;max-width:320px;line-height:1.6">Add port-forward entries to <code style="font-family:monospace;background:var(--surface);padding:2px 6px;border-radius:4px;font-size:.75rem">config.json</code> to see them here.</div>
+	        </div>`;
+	    } else if (s.ports && s.ports.length > 0 && container.children.length === 0) {
+	      for (const port of s.ports) await loadServiceAnalytics(port);
+	      lastAnalyticsRefresh = nowMs;
+	    } else if (s.ports) {
+	      for (const port of s.ports) {
+	        const portId = "port-" + port.local_port;
+	        const dot = document.querySelector(`#service-${portId} h3 .dot`);
+	        if (dot) dot.className = 'dot ' + (port.overall_status === 'ACTIVE' ? 'ok' : 'ko');
+	        const serviceBadge = document.getElementById(`badge-service-${portId}`);
+	        const portBadge = document.getElementById(`badge-port-${portId}`);
+	        const targetBadge = document.getElementById(`badge-target-${portId}`);
+	        if (serviceBadge) {
+	          serviceBadge.textContent = `service ${port.service_active ? 'active' : 'inactive'}`;
+	          serviceBadge.className = `badge ${port.service_active ? 'ok' : 'ko'}`;
+	        }
+	        if (portBadge) {
+	          portBadge.textContent = `port ${port.port_active ? 'listening' : 'down'}`;
+	          portBadge.className = `badge ${port.port_active ? 'ok' : 'ko'}`;
+	        }
+	        if (targetBadge) {
+	          targetBadge.textContent = `target ${port.target_reachable ? 'reachable' : 'unreachable'}`;
+	          targetBadge.className = `badge ${port.target_reachable ? 'ok' : 'muted'}`;
+	        }
+	        // Update uptime/latency quick summary from snapshot (no extra requests).
+	        const uEl = document.getElementById(`uptime-val-${portId}`);
+	        const lEl = document.getElementById(`latency-val-${portId}`);
+	        if (port.stats_24h && uEl && lEl) {
+	          const samples = port.stats_24h.samples || 0;
+	          uEl.textContent = samples > 0 ? (port.stats_24h.uptime_24h_percent + '%') : 'No data';
+	          lEl.textContent = (samples > 0 && port.stats_24h.avg_latency_ms !== null && port.stats_24h.avg_latency_ms !== undefined)
+	            ? (Number(port.stats_24h.avg_latency_ms).toFixed(1) + ' ms')
+	            : '---';
+	        }
+	        const utEl = document.getElementById(`uptime-trend-${portId}`);
+	        const ltEl = document.getElementById(`latency-trend-${portId}`);
+	        if (port.stats_24h && utEl) utEl.innerHTML = renderUptimeTrendFromCode(port.stats_24h.uptime_trend);
+	        if (port.stats_24h && ltEl) ltEl.innerHTML = renderLatencyTrendFromCode(port.stats_24h.latency_trend);
+	      }
+	    }
+
+	    // Only refresh charts for expanded services (huge CPU win on small machines).
+	    if (s.ports && shouldRefreshAnalytics && expandedCharts.size > 0) {
+	      for (const port of s.ports) {
+	        const portId = "port-" + port.local_port;
+	        if (!expandedCharts.has(portId)) continue;
+	        if (!serviceMetrics[portId]) continue;
+	        await ensureChartsLoaded(portId);
+	      }
+	      lastAnalyticsRefresh = nowMs;
+	    }
+
+	    $("last-update").textContent = s.timestamp;
+	  }
+
+	  async function refreshOnce() {
+	    const token = getSessionToken();
+	    const statusUrl = token ? `/api/status?token=${encodeURIComponent(token)}` : "/api/status";
+	    const r = await fetch(statusUrl, { cache: "no-store" });
+	    if (!r.ok) throw new Error("HTTP " + r.status);
+	    const s = await r.json();
+	    await applySnapshot(s);
+	  }
+
+	  let _refreshInFlight = null;
+	  async function refresh(opts) {
+	    const options = opts || {};
+	    if (_refreshInFlight) return _refreshInFlight;
+	    _refreshInFlight = (async () => {
+	      await checkSession();
+	      await refreshOnce();
+	      if (options.restartStream) startStatusStream();
+	    })().finally(() => { _refreshInFlight = null; });
+	    return _refreshInFlight;
+	  }
+
+  function stopStatusStream() {
+    if (statusStream) {
+      statusStream.close();
+      statusStream = null;
+    }
+    if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  function schedulePoll(nextMs) {
+    if (pollTimer) clearTimeout(pollTimer);
+    pollTimer = setTimeout(async () => {
+      try {
+        await refreshOnce();
+        pollBackoffMs = REFRESH_MS;
+        schedulePoll(REFRESH_MS);
+      } catch (e) {
+        pollBackoffMs = Math.min(pollBackoffMs * 2, 60000);
+        schedulePoll(pollBackoffMs);
+      }
+    }, nextMs);
+  }
+
+  function startStatusStream() {
+    stopStatusStream();
+    const token = getSessionToken();
+    const url = token ? `/api/status/stream?token=${encodeURIComponent(token)}` : "/api/status/stream";
+    try {
+      statusStream = new EventSource(url);
+      statusStream.onmessage = async (event) => {
+        try {
+          const s = JSON.parse(event.data);
+          await applySnapshot(s);
+        } catch (e) {
+          // ignore parse errors
+        }
+      };
+      statusStream.onerror = () => {
+        // fallback to polling with backoff
+        stopStatusStream();
+        schedulePoll(REFRESH_MS);
+      };
+    } catch (e) {
+      schedulePoll(REFRESH_MS);
+    }
+  }
+
+  // Initialize session and UI
+  document.addEventListener('visibilitychange', () => {
+    // Reduce work when tab is hidden.
+    if (document.hidden) {
+      stopStatusStream();
+      schedulePoll(60000);
+    } else {
+      startStatusStream();
+    }
+  });
+
+  (async () => {
+    await checkSession();
+    await refreshOnce();
+    startStatusStream();
+  })();
+</script>
+<div id="idle-toast" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--amber);color:#000;padding:10px 18px;border-radius:var(--r);font-size:.82rem;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);max-width:380px;text-align:center">
+  <span id="idle-toast-text"></span>
+</div>
+</body>
