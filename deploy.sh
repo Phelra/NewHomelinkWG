@@ -856,7 +856,7 @@ print(hash_val)
         log_info "Initializing metrics database (WAL mode)..."
         python3 -c "
 import sys; sys.path.insert(0, '${DASHBOARD_HOME}')
-from dashboard import init_db, DB_FILE
+from homelinkwg.config import init_db
 init_db()
 " || log_warning "Database init failed; will retry on service startup"
 
