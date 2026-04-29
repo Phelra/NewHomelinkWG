@@ -16,7 +16,6 @@ from typing import Any
 from homelinkwg.config import (
     _db_connect, _now_ts,
     get_threshold, is_alerts_muted,
-    is_light_mode_enabled, is_ultra_light_mode_enabled,
     is_analytics_enabled, init_db, load_thresholds,
     _analytics_init_lock, _collector_thread
 )

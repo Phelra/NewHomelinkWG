@@ -21,8 +21,7 @@ from homelinkwg.config import (
     LIGHT_TARGET_TTL_SECONDS, _target_probe_cache, _target_probe_lock,
     _adaptive_ultra_light_record,
     is_light_mode_enabled, is_ultra_light_mode_enabled, is_analytics_enabled,
-    is_alerts_muted, _now_ts, _db_connect, load_config, get_threshold, load_auth_config,
-    SCRIPT_DIR
+    is_alerts_muted, _now_ts, _db_connect, load_config, get_threshold
 )
 from homelinkwg.utils import flog, timed
 from homelinkwg.analytics import store_metric, detect_incidents, collector_health
@@ -44,6 +43,12 @@ __all__ = [
     "network_stats", "diagnostics", "diagnostics_probable_cause", "ports_status",
     "_probe_one_port", "_collect_metrics_once", "_probe_pool", "service_state_cache",
 ]
+
+# Track power state across invocations (for detecting under-voltage events)
+_power_state: dict[str, int] = {"seen": 0}
+
+# Track previous state for each port (to detect changes)
+service_state_cache = {}
 
 # ---------------------------------------------------------------------------
 # Helpers: subprocess with hard timeouts + consistent failure modes

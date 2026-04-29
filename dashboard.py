@@ -51,24 +51,22 @@ from homelinkwg.config import (
     LIGHT_TARGET_TTL_SECONDS, LIGHT_STATUS_CACHE_TTL_SECONDS,
     ULTRA_STATUS_CACHE_TTL_SECONDS, DEFAULT_STATUS_CACHE_TTL_SECONDS,
     _config_cache_lock, _config_cache, _analytics_cache,
-    _analytics_init_lock, _collector_thread,
     _target_probe_cache, _target_probe_lock,
     _adaptive_state, _adaptive_lock,
     _now_ts, _db_connect,
-    load_auth_config, load_config, load_thresholds, get_threshold, set_threshold,
+    load_auth_config, load_config, get_threshold, set_threshold,
     is_alerts_muted, alerts_status,
     is_analytics_enabled, _resolve_mode_flag, is_light_mode_enabled,
     is_ultra_light_mode_enabled, _adaptive_ultra_light_record,
     adaptive_ultra_light_status, status_refresh_ms, analytics_refresh_ms,
-    init_db, SCRIPT_DIR
+    SCRIPT_DIR
 )
 from homelinkwg.auth import (
-    hash_password, verify_password, create_session, verify_session,
+    verify_password, create_session, verify_session,
     log_audit, _write_analytics_conf_key
 )
 from homelinkwg.analytics import (
-    store_metric, detect_incidents, collector_health, _start_analytics_runtime,
-    _collector_heartbeat
+    store_metric, detect_incidents, collector_health, _start_analytics_runtime
 )
 
 __version__ = "5.0"
