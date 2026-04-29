@@ -1846,15 +1846,34 @@ def compress_response(response):
         pass  # If compression fails, send uncompressed
     return response
 
-# Add cache headers for static content
+# Add cache headers for static content and API responses
 @app.after_request
 def add_cache_headers(response):
-    """Add cache headers based on content type."""
+    """Add cache headers based on content type and endpoint.
+
+    Phase 3D1: Enable browser/CDN caching for public endpoints that don't change
+    frequently, while keeping liveness checks always fresh.
+    """
     content_type = response.content_type or ""
+
+    # Static assets - cache for 1 week
     if content_type.startswith(('text/css', 'text/javascript', 'image/')):
-        response.headers['Cache-Control'] = 'public, max-age=604800'  # 1 week for static
-    elif content_type.startswith('application/json'):
-        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'  # No caching for JSON
+        response.headers['Cache-Control'] = 'public, max-age=604800'
+    # API responses - vary by endpoint
+    elif request.path.startswith('/api/'):
+        if request.path in ('/api/status', '/api/healthz'):
+            # Status endpoints: safe to cache for 5 seconds (poll interval already 5-30s)
+            response.headers['Cache-Control'] = 'public, max-age=5'
+        elif request.path == '/api/livez':
+            # Liveness check: always fresh (used by monitoring)
+            response.headers['Cache-Control'] = 'no-cache'
+        else:
+            # Other API endpoints: no cache (config changes, login, etc.)
+            response.headers['Cache-Control'] = 'no-cache, no-store'
+    # HTML dashboard - no cache (always get latest)
+    elif content_type.startswith('text/html'):
+        response.headers['Cache-Control'] = 'no-cache'
+
     response.headers['X-Content-Type-Options'] = 'nosniff'  # Security header
     return response
 
@@ -2050,6 +2069,42 @@ def _snapshot(*, admin_view: bool = False) -> dict[str, Any]:
         },
     }
 
+# Phase 3D2: Snapshot JSON serialization caching
+_snapshot_json_cache: dict[str, tuple[str, float]] = {}  # cache_key -> (json_str, timestamp)
+_snapshot_json_cache_lock = threading.Lock()
+
+def get_snapshot_json(admin_view: bool = False) -> str:
+    """Get snapshot as JSON string with caching to avoid repeated serialization.
+
+    Phase 3D2: Caches the JSON representation alongside the dict cache,
+    reducing CPU cost of json.dumps() calls from every request to every 5-30s.
+    """
+    cache_key = "status_snapshot_admin" if admin_view else "status_snapshot_public"
+    now = time.time()
+
+    # Check if cached JSON is still valid (use same TTL as snapshot dict cache)
+    with _snapshot_json_cache_lock:
+        if cache_key in _snapshot_json_cache:
+            json_str, ts = _snapshot_json_cache[cache_key]
+            # Reuse cache if still valid (based on snapshot cache TTL)
+            if now - ts < cache_store.ttl:
+                return json_str
+
+    # Get snapshot dict (will use dict cache if available)
+    snap = cache_store.get(cache_key)
+    if not snap:
+        snap = _snapshot(admin_view=admin_view)
+        cache_store.set(cache_key, snap)
+
+    # Serialize to JSON with minimal whitespace
+    json_str = json.dumps(snap, separators=(",", ":"))
+
+    # Cache the JSON string
+    with _snapshot_json_cache_lock:
+        _snapshot_json_cache[cache_key] = (json_str, now)
+
+    return json_str
+
 def _extract_whats_new() -> str:
     """Return the 'What's New' section from RELEASE_NOTES.md (best-effort)."""
     try:
@@ -2166,20 +2221,19 @@ def api_status():
 
 @app.route("/api/status/stream")
 def api_status_stream():
-    """Stream status snapshots via Server-Sent Events (push, minimal overhead)."""
+    """Stream status snapshots via Server-Sent Events (push, minimal overhead).
+
+    Phase 3D2: Uses cached JSON serialization to avoid repeated json.dumps() calls.
+    """
     admin_view = _request_admin_view()
-    cache_key = "status_snapshot_admin" if admin_view else "status_snapshot_public"
 
     def stream():
         last_payload = ""
         end_time = time.time() + 600  # keep stream for 10 minutes
         while time.time() < end_time:
             try:
-                snap = cache_store.get(cache_key)
-                if not snap:
-                    snap = _snapshot(admin_view=admin_view)
-                    cache_store.set(cache_key, snap)
-                payload = json.dumps(snap, separators=(",", ":"))
+                # Phase 3D2: Use cached JSON serialization
+                payload = get_snapshot_json(admin_view=admin_view)
                 if payload != last_payload:
                     last_payload = payload
                     yield f"data: {payload}\n\n"
