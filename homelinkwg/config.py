@@ -133,10 +133,14 @@ def _db_connect(*, row_factory: bool = False) -> sqlite3.Connection:
 def load_auth_config() -> None:
     """Load admin password hash and TOTP settings from config."""
     global ADMIN_PASSWORD_HASH, TOTP_SECRET, TOTP_ENABLED
+    if not ANALYTICS_CONFIG.exists():
+        flog("WARN", "config", f"Analytics config file not found at {ANALYTICS_CONFIG}")
+        return
     cfg = _parse_kv_config(ANALYTICS_CONFIG)
     ADMIN_PASSWORD_HASH = cfg.get("ADMIN_PASSWORD") or None
     TOTP_SECRET = cfg.get("TOTP_SECRET") or None
     TOTP_ENABLED = cfg.get("TOTP_ENABLED", "false").lower() == "true"
+    flog("DEBUG", "config", f"Auth config loaded: password_hash={'set' if ADMIN_PASSWORD_HASH else 'NOT SET'}")
 
 
 def load_config() -> dict[str, Any]:
