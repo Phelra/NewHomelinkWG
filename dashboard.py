@@ -227,6 +227,16 @@ def cached_getaddrinfo(host: str, port: int, family=0, type=socket.SOCK_STREAM):
         raise
 
 
+def _measure_single_latency(host: str, port: int, timeout: float) -> float | None:
+    """Phase 3B2: Measure a single latency sample for parallel execution."""
+    t0 = time.perf_counter()
+    try:
+        sock = socket.create_connection((host, port), timeout=timeout)
+        sock.close()
+        return (time.perf_counter() - t0) * 1000.0
+    except (OSError, ValueError):
+        return None
+
 def latency_breakdown(host: str, port: int, *, timeout: float = 1.0,
                       samples: int = 5) -> dict[str, Any]:
     """Measure latency with DNS / TCP separated, plus jitter from N samples.
@@ -234,6 +244,8 @@ def latency_breakdown(host: str, port: int, *, timeout: float = 1.0,
     Returns ``{ok, dns_ms, tcp_ms_min, tcp_ms_avg, tcp_ms_p95, jitter_ms,
     samples_taken, error}``. Used both for live diagnostics and for the
     diagnostic bundle. Probes are throttled to ``timeout`` seconds total.
+
+    Phase 3B2: TCP samples are now parallelized, reducing time from 5*1s to ~1s.
     """
     out: dict[str, Any] = {"ok": False, "samples_taken": 0}
     # 1) DNS resolution timing — only meaningful if `host` is not already an IP
@@ -253,24 +265,31 @@ def latency_breakdown(host: str, port: int, *, timeout: float = 1.0,
         out["dns_ms"] = 0.0
         out["resolved_ip"] = host
 
-    # 2) TCP handshake timings — N samples for jitter
+    # 2) TCP handshake timings — N samples for jitter (now parallelized)
     rtts: list[float] = []
-    last_err: str | None = None
-    for i in range(max(1, samples)):
-        t0 = time.perf_counter()
-        try:
-            sock = socket.create_connection((host, port), timeout=timeout)
-            sock.close()
-            rtts.append((time.perf_counter() - t0) * 1000.0)
-        except (OSError, ValueError) as e:
-            last_err = str(e)
-        out["samples_taken"] = i + 1
-        # Brief gap between samples so kernel TCP stack doesn't coalesce
-        if i + 1 < samples:
-            time.sleep(0.02)
+    if samples > 1:
+        # Phase 3B2: Parallelize latency samples using thread pool
+        futures = [
+            _probe_pool.submit(_measure_single_latency, host, port, timeout)
+            for _ in range(max(1, samples))
+        ]
+        for future in futures:
+            try:
+                rtt = future.result(timeout=timeout + 1.0)
+                if rtt is not None:
+                    rtts.append(rtt)
+            except Exception:
+                pass
+        out["samples_taken"] = len(futures)
+    else:
+        # Single sample - execute directly without thread pool overhead
+        rtt = _measure_single_latency(host, port, timeout)
+        if rtt is not None:
+            rtts.append(rtt)
+        out["samples_taken"] = 1
 
     if not rtts:
-        out["error"] = last_err or "all_samples_failed"
+        out["error"] = "all_samples_failed"
         return out
 
     rtts.sort()
@@ -1570,21 +1589,48 @@ def diagnostics_probable_cause(vpn: dict[str, str], diag: dict[str, bool], ports
 
     return {"code": "healthy", "message": "No obvious issue detected."}
 
+def _probe_port_parallel(port_config: dict[str, Any]) -> tuple[bool, bool, bool]:
+    """Phase 3B1: Probe a single port in parallel (local port, service, target).
+
+    Returns (port_up, service_up, target_up) tuple for concurrent execution.
+    """
+    lp = int(port_config["local_port"])
+    rh = str(port_config["remote_host"])
+    rp = int(port_config["remote_port"])
+    service = f"homelinkwg-socat-{lp}"
+
+    port_up = _tcp_reachable("127.0.0.1", lp, timeout=0.5)
+    service_up = systemd_is_active(service)
+    target_up = _probe_target_reachable(rh, rp)
+
+    return port_up, service_up, target_up
+
 def ports_status(ports: list[dict[str, Any]], *, redacted: bool = False) -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
     # Phase 3A2: Use cached incident ports instead of inline database query
     recent_incident_ports = get_recent_incident_ports()
 
+    # Phase 3B1: Parallelize port probes using thread pool
+    # Submit all port probes to thread pool for concurrent execution
+    futures: list[tuple[dict[str, Any], Any]] = []
     for p in ports:
         if not p.get("enabled", True):
             continue
+        # Submit probe task to thread pool
+        future = _probe_pool.submit(_probe_port_parallel, p)
+        futures.append((p, future))
+
+    # Collect results as they complete
+    for p, future in futures:
+        try:
+            port_up, service_up, target_up = future.result(timeout=5.0)
+        except Exception:
+            # Timeout or error - mark all as failed
+            port_up, service_up, target_up = False, False, False
+
         lp = int(p["local_port"])
         rh = str(p["remote_host"])
         rp = int(p["remote_port"])
-        service = f"homelinkwg-socat-{lp}"
-        port_up = _tcp_reachable("127.0.0.1", lp, timeout=0.5)
-        service_up = systemd_is_active(service)
-        target_up = _probe_target_reachable(rh, rp)
 
         has_incident = (f"port-{lp}" in recent_incident_ports) and (not is_alerts_muted())
         remote_host = "hidden" if redacted else rh
@@ -2475,7 +2521,11 @@ def api_diagnose():
         return jsonify({"error": "port not found"}), 404
 
     def diagnostic_stream():
-        """Generator that yields diagnostic results with segmented latency analysis."""
+        """Generator that yields diagnostic results with segmented latency analysis.
+
+        Phase 3B3: Independent checks (WireGuard, target reachability, service status)
+        are now parallelized to run concurrently instead of sequentially.
+        """
         remote_host = port_config["remote_host"]
         remote_port = int(port_config["remote_port"])
         local_avg = None
@@ -2500,17 +2550,46 @@ def api_diagnose():
         else:
             yield f"data: {json.dumps({'step': 'local_latency', 'status': 'fail', 'message': 'Cannot reach local port'})}\n\n"
 
-        # Test 2: WireGuard tunnel status
+        # Phase 3B3: Parallelize independent checks (WireGuard, Target, Service)
         yield f"data: {json.dumps({'step': 'wireguard', 'status': 'testing', 'message': 'Checking WireGuard tunnel status...'})}\n\n"
-        wg_status = vpn_status(cfg.get("vpn", {}).get("interface", "wg0"))
-        wg_ok = wg_status["status"] == "CONNECTED"
-        wg_msg = f"WireGuard tunnel: {wg_status['status']} (IP: {wg_status['ip']})"
+        yield f"data: {json.dumps({'step': 'target_reach', 'status': 'testing', 'message': 'Testing target reachability...'})}\n\n"
+        yield f"data: {json.dumps({'step': 'service', 'status': 'testing', 'message': 'Checking socat service...'})}\n\n"
+
+        # Submit all independent checks to thread pool
+        wg_future = _probe_pool.submit(lambda: vpn_status(cfg.get("vpn", {}).get("interface", "wg0")))
+        target_reach_future = _probe_pool.submit(lambda: _tcp_reachable(remote_host, remote_port, timeout=2.0))
+        service_future = _probe_pool.submit(lambda: systemd_is_active(f"homelinkwg-socat-{local_port}"))
+
+        # Collect results
+        try:
+            wg_status = wg_future.result(timeout=5.0)
+            wg_ok = wg_status["status"] == "CONNECTED"
+            wg_msg = f"WireGuard tunnel: {wg_status['status']} (IP: {wg_status['ip']})"
+        except Exception:
+            wg_ok = False
+            wg_msg = "Failed to check WireGuard status"
+
+        try:
+            target_ok = target_reach_future.result(timeout=3.0)
+            target_status = "REACHABLE" if target_ok else "UNREACHABLE"
+            msg6 = f"Target {remote_host}:{remote_port} is {target_status}"
+        except Exception:
+            target_ok = False
+            msg6 = f"Failed to reach {remote_host}:{remote_port}"
+
+        try:
+            service_ok = service_future.result(timeout=5.0)
+            service_status = "ACTIVE" if service_ok else "INACTIVE"
+            msg7 = f"socat service is {service_status}"
+        except Exception:
+            service_ok = False
+            msg7 = "Failed to check service status"
+
+        # Yield results in order
         yield f"data: {json.dumps({'step': 'wireguard', 'status': 'ok' if wg_ok else 'fail', 'message': wg_msg})}\n\n"
 
         # Test 3: VPN tunnel latency (segment 2: socat→VPN) - verify tunnel is working
         if wg_ok:
-            # Tunnel is already verified by WireGuard status. Skip port measurement since 51820 is control port.
-            # The actual tunnel latency is already measured in Test 4 (target latency) and Test 1 (local latency)
             msg2 = f"VPN tunnel status: OK (measured via target service response)"
             yield f"data: {json.dumps({'step': 'tunnel_latency', 'status': 'ok', 'message': msg2})}\n\n"
 
@@ -2534,18 +2613,8 @@ def api_diagnose():
             msg3b = f"Cannot reach {remote_host}:{remote_port} (timeout)"
             yield f"data: {json.dumps({'step': 'target_latency', 'status': 'fail', 'message': msg3b})}\n\n"
 
-        # Test 5: Target reachability
-        yield f"data: {json.dumps({'step': 'target_reach', 'status': 'testing', 'message': 'Testing target reachability...'})}\n\n"
-        target_ok = _tcp_reachable(remote_host, remote_port, timeout=2.0)
-        target_status = "REACHABLE" if target_ok else "UNREACHABLE"
-        msg6 = f"Target {remote_host}:{remote_port} is {target_status}"
+        # Yield parallel results
         yield f"data: {json.dumps({'step': 'target_reach', 'status': 'ok' if target_ok else 'fail', 'message': msg6})}\n\n"
-
-        # Test 6: Service status
-        yield f"data: {json.dumps({'step': 'service', 'status': 'testing', 'message': 'Checking socat service...'})}\n\n"
-        service_ok = systemd_is_active(f"homelinkwg-socat-{local_port}")
-        service_status = "ACTIVE" if service_ok else "INACTIVE"
-        msg7 = f"socat service is {service_status}"
         yield f"data: {json.dumps({'step': 'service', 'status': 'ok' if service_ok else 'fail', 'message': msg7})}\n\n"
 
         # Summary with explicit segmented latency and bottleneck.
