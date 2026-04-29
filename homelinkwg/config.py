@@ -133,14 +133,19 @@ def _db_connect(*, row_factory: bool = False) -> sqlite3.Connection:
 def load_auth_config() -> None:
     """Load admin password hash and TOTP settings from config."""
     global ADMIN_PASSWORD_HASH, TOTP_SECRET, TOTP_ENABLED
+    flog("INFO", "config", f"Loading auth config from: {ANALYTICS_CONFIG}")
     if not ANALYTICS_CONFIG.exists():
-        flog("WARN", "config", f"Analytics config file not found at {ANALYTICS_CONFIG}")
+        flog("WARN", "config", f"Analytics config file NOT FOUND at {ANALYTICS_CONFIG}")
         return
-    cfg = _parse_kv_config(ANALYTICS_CONFIG)
-    ADMIN_PASSWORD_HASH = cfg.get("ADMIN_PASSWORD") or None
-    TOTP_SECRET = cfg.get("TOTP_SECRET") or None
-    TOTP_ENABLED = cfg.get("TOTP_ENABLED", "false").lower() == "true"
-    flog("DEBUG", "config", f"Auth config loaded: password_hash={'set' if ADMIN_PASSWORD_HASH else 'NOT SET'}")
+    try:
+        cfg = _parse_kv_config(ANALYTICS_CONFIG)
+        flog("INFO", "config", f"Parsed config file, found {len(cfg)} keys")
+        ADMIN_PASSWORD_HASH = cfg.get("ADMIN_PASSWORD") or None
+        TOTP_SECRET = cfg.get("TOTP_SECRET") or None
+        TOTP_ENABLED = cfg.get("TOTP_ENABLED", "false").lower() == "true"
+        flog("INFO", "config", f"Auth loaded: password_hash={'✓ set' if ADMIN_PASSWORD_HASH else '✗ NOT SET'}, totp={'enabled' if TOTP_ENABLED else 'disabled'}")
+    except Exception as e:
+        flog("ERROR", "config", f"Failed to load auth config: {e}")
 
 
 def load_config() -> dict[str, Any]:
