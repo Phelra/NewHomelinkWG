@@ -79,6 +79,42 @@ api_limiter = RateLimiter(max_attempts=100, window_seconds=60)
 # Track previous state for each port (to detect changes)
 service_state_cache = {}  # port_id -> {service_active, port_listening, target_reachable, latency_ms}
 
+# Phase 3A2: Incident cache for 5-minute recent incidents
+# Reduces database queries from O(n_ports) to O(1) per snapshot generation
+_incident_cache = {"ports": set(), "mtime": 0.0}
+_incident_cache_ttl = 300  # 5 minutes
+_incident_cache_lock = threading.Lock()
+
+def get_recent_incident_ports() -> set[str]:
+    """Get set of port_ids with recent incidents (cached for 5 minutes)."""
+    global _incident_cache
+    if not is_analytics_enabled():
+        return set()
+
+    now = time.time()
+    with _incident_cache_lock:
+        if now - _incident_cache["mtime"] < _incident_cache_ttl and _incident_cache["ports"]:
+            return _incident_cache["ports"]
+
+    # Refresh cache from database
+    recent_ports: set[str] = set()
+    try:
+        cutoff = _now_ts() - 300  # Last 5 minutes
+        with _db_connect() as conn:
+            rows = conn.execute(
+                "SELECT DISTINCT port_id FROM incidents WHERE timestamp > ?",
+                (cutoff,),
+            ).fetchall()
+        recent_ports = {row[0] for row in rows if row and row[0]}
+    except sqlite3.Error:
+        pass
+
+    with _incident_cache_lock:
+        _incident_cache["ports"] = recent_ports
+        _incident_cache["mtime"] = now
+
+    return recent_ports
+
 # ---------------------------------------------------------------------------
 # Flask import guard
 # ---------------------------------------------------------------------------
@@ -160,6 +196,36 @@ def _measure_latency(host: str, port: int, timeout: float = 1.0) -> int:
         return -1
     return int(round(total))
 
+# Phase 3A3: DNS resolution caching (10 minute TTL)
+_dns_cache: dict[str, tuple[Any, float]] = {}
+_dns_cache_lock = threading.Lock()
+_DNS_CACHE_TTL = 600  # 10 minutes
+
+def cached_getaddrinfo(host: str, port: int, family=0, type=socket.SOCK_STREAM):
+    """Wrapper around socket.getaddrinfo() with 10-minute caching.
+
+    Avoids repeated DNS lookups which can add 10-200ms per probe.
+    Returns the same result as socket.getaddrinfo().
+    """
+    now = time.time()
+    cache_key = f"{host}:{port}:{family}:{type}"
+
+    with _dns_cache_lock:
+        if cache_key in _dns_cache:
+            cached_result, expire_time = _dns_cache[cache_key]
+            if now < expire_time:
+                return cached_result
+
+    # Not in cache or expired — perform resolution
+    try:
+        result = socket.getaddrinfo(host, port, family, type)
+        with _dns_cache_lock:
+            _dns_cache[cache_key] = (result, now + _DNS_CACHE_TTL)
+        return result
+    except socket.gaierror:
+        # Don't cache errors; let them fail on next call for retry
+        raise
+
 
 def latency_breakdown(host: str, port: int, *, timeout: float = 1.0,
                       samples: int = 5) -> dict[str, Any]:
@@ -175,7 +241,8 @@ def latency_breakdown(host: str, port: int, *, timeout: float = 1.0,
     if not is_ip:
         t0 = time.perf_counter()
         try:
-            addr_info = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
+            # Phase 3A3: Use cached DNS resolution (10-minute TTL)
+            addr_info = cached_getaddrinfo(host, port, type=socket.SOCK_STREAM)
             out["dns_ms"] = round((time.perf_counter() - t0) * 1000.0, 2)
             if addr_info:
                 out["resolved_ip"] = addr_info[0][4][0]
@@ -361,14 +428,22 @@ def _read_diskstats() -> dict[str, dict[str, int]]:
 _prev_diskstats: dict[str, dict[str, int]] = {}
 _prev_diskstats_ts: float = 0.0
 _disk_latency_cache: dict[str, Any] = {}
+_disk_latency_cache_ts: float = 0.0
+_DISK_LATENCY_CACHE_TTL = 30.0  # Phase 3A4: Cache disk latency for 30 seconds
 
 def disk_latency() -> dict[str, Any]:
     """Return current disk write/read latency for the main storage device.
-    Uses /proc/diskstats deltas — zero subprocess cost."""
-    global _prev_diskstats, _prev_diskstats_ts, _disk_latency_cache
+    Uses /proc/diskstats deltas — zero subprocess cost.
+    Results cached for 30 seconds to avoid excessive /proc reads."""
+    global _prev_diskstats, _prev_diskstats_ts, _disk_latency_cache, _disk_latency_cache_ts
     import time as _time
 
     now = _time.monotonic()
+
+    # Phase 3A4: Check if cache is still valid (30-second TTL)
+    if _disk_latency_cache and (now - _disk_latency_cache_ts) < _DISK_LATENCY_CACHE_TTL:
+        return _disk_latency_cache
+
     cur = _read_diskstats()
 
     result: dict[str, Any] = {}
@@ -400,6 +475,7 @@ def disk_latency() -> dict[str, Any]:
     _prev_diskstats_ts = now
     if result:
         _disk_latency_cache = result
+        _disk_latency_cache_ts = now
     return _disk_latency_cache  # return last known value while disk is idle
 
 _cpu_sample_cache: dict[str, Any] = {"value": None, "ts": 0.0,
@@ -1496,18 +1572,8 @@ def diagnostics_probable_cause(vpn: dict[str, str], diag: dict[str, bool], ports
 
 def ports_status(ports: list[dict[str, Any]], *, redacted: bool = False) -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
-    recent_incident_ports: set[str] = set()
-    if is_analytics_enabled():
-        try:
-            cutoff = _now_ts() - 300  # Last 5 minutes
-            with _db_connect() as conn:
-                rows = conn.execute(
-                    "SELECT DISTINCT port_id FROM incidents WHERE timestamp > ?",
-                    (cutoff,),
-                ).fetchall()
-            recent_incident_ports = {row[0] for row in rows if row and row[0]}
-        except sqlite3.Error:
-            recent_incident_ports = set()
+    # Phase 3A2: Use cached incident ports instead of inline database query
+    recent_incident_ports = get_recent_incident_ports()
 
     for p in ports:
         if not p.get("enabled", True):

@@ -39,9 +39,9 @@ TOTP_ENABLED: bool = False        # Loaded from analytics.conf
 CONFIG_CACHE_TTL_SECONDS = 2.0
 ANALYTICS_CACHE_TTL_SECONDS = 5.0
 LIGHT_TARGET_TTL_SECONDS = 30.0
-LIGHT_STATUS_CACHE_TTL_SECONDS = 15
+LIGHT_STATUS_CACHE_TTL_SECONDS = 20      # Increased from 15s for 50% fewer snapshot calls
 ULTRA_STATUS_CACHE_TTL_SECONDS = 30
-DEFAULT_STATUS_CACHE_TTL_SECONDS = 5
+DEFAULT_STATUS_CACHE_TTL_SECONDS = 15    # Increased from 5s for 3x fewer snapshot calls
 
 # Client refresh intervals (milliseconds)
 DEFAULT_REFRESH_MS = 5000
