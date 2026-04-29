@@ -66,6 +66,10 @@ from homelinkwg.auth import (
     hash_password, verify_password, create_session, verify_session,
     log_audit, _write_analytics_conf_key
 )
+from homelinkwg.analytics import (
+    store_metric, detect_incidents, collector_health, _start_analytics_runtime,
+    _collector_heartbeat
+)
 
 __version__ = "5.0"
 __date__ = "2026-04-28"
@@ -259,79 +263,6 @@ def _probe_target_reachable(host: str, port: int) -> bool:
             while len(_target_probe_cache) > 256:
                 _target_probe_cache.pop(next(iter(_target_probe_cache)), None)
     return reachable
-
-def store_metric(port_id: str, service_name: str, service_active: bool,
-                 port_listening: bool, target_reachable: bool, latency_ms: int) -> None:
-    """Store a metric snapshot to the database."""
-    try:
-        with _db_connect() as conn:
-            conn.execute(
-                """
-                INSERT INTO metrics
-                (timestamp, port_id, service_name, service_active, port_listening, target_reachable, latency_ms)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (_now_ts(), port_id, service_name, service_active, port_listening, target_reachable, latency_ms),
-            )
-        flog("DEBUG", "metrics", "stored", {
-            "port_id": port_id, "service": service_name,
-            "service_active": service_active, "port_listening": port_listening,
-            "target_reachable": target_reachable, "latency_ms": latency_ms,
-        })
-    except sqlite3.Error as e:
-        flog("ERROR", "metrics", "store_metric failed",
-             {"port_id": port_id}, exc=e)
-
-def detect_incidents(port_id: str, service_name: str, service_active: bool,
-                    port_listening: bool, target_reachable: bool, latency_ms: int) -> None:
-    """Detect and log incidents based on metrics."""
-    incidents = []
-
-    # Incident 1: Service down — only when the port is also not listening.
-    # supervisorctl/systemctl status can flap (timeouts, brief STARTING/BACKOFF
-    # states), so a listening port is the real proof that traffic is flowing.
-    if not service_active and not port_listening:
-        incidents.append(("SERVICE_DOWN", "⚠️ Service inactive", "high"))
-
-    # Incident 2: Port not listening while the manager reports the service active
-    if service_active and not port_listening:
-        incidents.append(("PORT_DOWN", "⚠️ Port not listening", "high"))
-
-    # Incident 3: Target unreachable
-    if not target_reachable:
-        incidents.append(("TARGET_UNREACHABLE", "⚠️ Target unreachable", "medium"))
-
-    # Incident 4: High latency (use configurable threshold)
-    latency_threshold = get_threshold("latency_threshold_ms", 50.0)
-    if latency_ms > latency_threshold:
-        incidents.append(("HIGH_LATENCY", f"⚠️ Latency {latency_ms}ms (>{latency_threshold}ms threshold)", "medium"))
-
-    # Log incidents and store in database
-    alerts_muted = is_alerts_muted()
-    for event_type, description, severity in incidents:
-        log_msg = f"{service_name}: {description}"
-        if not alerts_muted:
-            level = "ERROR" if severity == "high" else "WARN"
-            flog(level, "incident", log_msg, {
-                "port_id": port_id, "event_type": event_type,
-                "severity": severity, "latency_ms": latency_ms,
-            })
-        try:
-            with _db_connect() as conn:
-                conn.execute(
-                    """
-                    INSERT INTO incidents (port_id, service_name, event_type, timestamp, severity, description)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """,
-                    (port_id, service_name, event_type, _now_ts(), severity, description),
-                )
-        except sqlite3.Error as e:
-            flog("ERROR", "incident", "DB error logging incident",
-                 {"port_id": port_id, "event_type": event_type}, exc=e)
-
-    if not incidents:
-        flog("DEBUG", "systemd", f"{service_name}: healthy",
-             {"port_id": port_id, "latency_ms": latency_ms})
 
 # ---------------------------------------------------------------------------
 # Status collectors (pure functions — easy to unit-test later)
@@ -1749,76 +1680,6 @@ def _collect_metrics_once() -> None:
         flog("ERROR", "metrics", "collection cycle failed", exc=e)
     finally:
         set_correlation_id(None)
-
-_collector_heartbeat = {"last_cycle_ts": 0.0, "cycles": 0,
-                        "last_error_ts": 0.0, "last_error": None}
-
-def _metrics_collector() -> None:
-    """Background thread: collect metrics periodically (first collection immediate).
-
-    Emits a heartbeat every 5 minutes so a silent thread death is observable
-    via ``/api/healthz`` (the heartbeat freshness gates the liveness check).
-    """
-    flog("INFO", "systemd", "metrics collector started")
-    _collect_metrics_once()
-    _collector_heartbeat["last_cycle_ts"] = time.time()
-    _collector_heartbeat["cycles"] = 1
-    last_heartbeat_log = time.time()
-    while True:
-        try:
-            if is_ultra_light_mode_enabled():
-                interval = 180
-            elif is_light_mode_enabled():
-                interval = 90
-            else:
-                interval = 60
-            time.sleep(interval)
-            _collect_metrics_once()
-            _collector_heartbeat["last_cycle_ts"] = time.time()
-            _collector_heartbeat["cycles"] += 1
-            # Emit a INFO heartbeat at most every 5 minutes — useful in logs to
-            # confirm the collector loop is still alive on a quiet system.
-            if time.time() - last_heartbeat_log >= 300:
-                flog("INFO", "metrics", "collector heartbeat",
-                     {"cycles": _collector_heartbeat["cycles"],
-                      "interval": interval})
-                last_heartbeat_log = time.time()
-        except Exception as e:
-            _collector_heartbeat["last_error_ts"] = time.time()
-            _collector_heartbeat["last_error"] = str(e)
-            flog("ERROR", "metrics", "collector loop error", exc=e)
-
-
-def collector_health() -> dict[str, Any]:
-    """Snapshot of the metrics collector liveness for the diagnostic bundle."""
-    now = time.time()
-    last = _collector_heartbeat["last_cycle_ts"]
-    age = now - last if last else None
-    healthy = age is not None and age < 600  # within 10 min of last cycle
-    return {
-        "cycles": _collector_heartbeat["cycles"],
-        "last_cycle_ts": last,
-        "age_seconds": round(age, 1) if age is not None else None,
-        "healthy": healthy,
-        "last_error": _collector_heartbeat["last_error"],
-        "last_error_ts": _collector_heartbeat["last_error_ts"] or None,
-    }
-
-def _start_analytics_runtime() -> None:
-    """Initialize analytics resources exactly once."""
-    global _collector_thread
-    if not is_analytics_enabled():
-        print("[homelinkwg-dashboard] Analytics disabled - metrics collection skipped", file=sys.stderr)
-        return
-
-    with _analytics_init_lock:
-        init_db()
-        load_thresholds()
-        if _collector_thread and _collector_thread.is_alive():
-            return
-        _collector_thread = threading.Thread(target=_metrics_collector, daemon=True)
-        _collector_thread.start()
-    print("[homelinkwg-dashboard] Analytics enabled - metrics collector started", file=sys.stderr)
 
 # ---------------------------------------------------------------------------
 # Flask app
