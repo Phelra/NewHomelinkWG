@@ -19,7 +19,7 @@ from typing import Any
 
 from homelinkwg.config import (
     LIGHT_TARGET_TTL_SECONDS, _target_probe_cache, _target_probe_lock,
-    _adaptive_ultra_light_record, _power_state,
+    _adaptive_ultra_light_record,
     is_light_mode_enabled, is_ultra_light_mode_enabled, is_analytics_enabled,
     is_alerts_muted, _now_ts, _db_connect, load_config, get_threshold, load_auth_config,
     SCRIPT_DIR
