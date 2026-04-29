@@ -778,6 +778,37 @@ install_dashboard() {
     fi
 
     install -m 640 -o root -g "${DASHBOARD_USER}" "${SCRIPT_DIR}/dashboard.py" "${DASHBOARD_HOME}/dashboard.py"
+
+    # Copy homelinkwg package (modularized Python modules)
+    if [[ -d "${SCRIPT_DIR}/homelinkwg" ]]; then
+        log_info "Copying homelinkwg package..."
+        cp -r -a "${SCRIPT_DIR}/homelinkwg" "${DASHBOARD_HOME}/"
+        chown -R "${DASHBOARD_USER}:${DASHBOARD_USER}" "${DASHBOARD_HOME}/homelinkwg"
+        find "${DASHBOARD_HOME}/homelinkwg" -type f -exec chmod 640 {} \;
+        find "${DASHBOARD_HOME}/homelinkwg" -type d -exec chmod 750 {} \;
+    fi
+
+    # Copy requirements.txt for pip dependencies
+    if [[ -f "${SCRIPT_DIR}/requirements.txt" ]]; then
+        install -m 640 -o root -g "${DASHBOARD_USER}" "${SCRIPT_DIR}/requirements.txt" "${DASHBOARD_HOME}/requirements.txt"
+    fi
+
+    # Copy Flask templates and static assets
+    if [[ -d "${SCRIPT_DIR}/templates" ]]; then
+        log_info "Copying Flask templates..."
+        cp -r -a "${SCRIPT_DIR}/templates" "${DASHBOARD_HOME}/"
+        chown -R "${DASHBOARD_USER}:${DASHBOARD_USER}" "${DASHBOARD_HOME}/templates"
+        find "${DASHBOARD_HOME}/templates" -type f -exec chmod 640 {} \;
+        find "${DASHBOARD_HOME}/templates" -type d -exec chmod 750 {} \;
+    fi
+    if [[ -d "${SCRIPT_DIR}/static" ]]; then
+        log_info "Copying static assets..."
+        cp -r -a "${SCRIPT_DIR}/static" "${DASHBOARD_HOME}/"
+        chown -R "${DASHBOARD_USER}:${DASHBOARD_USER}" "${DASHBOARD_HOME}/static"
+        find "${DASHBOARD_HOME}/static" -type f -exec chmod 640 {} \;
+        find "${DASHBOARD_HOME}/static" -type d -exec chmod 750 {} \;
+    fi
+
     # Do not overwrite existing config/vpn config on update unless explicitly requested.
     if [[ ! -f "${DASHBOARD_HOME}/config.json" || "${APPLY_CONFIG}" == "true" ]]; then
         install -m 640 -o root -g "${DASHBOARD_USER}" "${CONFIG_JSON}" "${DASHBOARD_HOME}/config.json"
@@ -851,6 +882,7 @@ Type=simple
 User=${DASHBOARD_USER}
 Group=${DASHBOARD_USER}
 WorkingDirectory=${DASHBOARD_HOME}
+Environment="PYTHONPATH=${DASHBOARD_HOME}"
 ExecStart=/usr/bin/python3 ${DASHBOARD_HOME}/dashboard.py
 Restart=always
 RestartSec=5

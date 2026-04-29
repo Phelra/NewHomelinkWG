@@ -29,6 +29,11 @@ from functools import wraps
 from pathlib import Path
 from typing import Any
 
+# Ensure homelinkwg package can be imported (add current directory to sys.path)
+_SCRIPT_DIR = Path(__file__).parent.absolute()
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
 try:
     import bcrypt  # type: ignore
 except Exception:
