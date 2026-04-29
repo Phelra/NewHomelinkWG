@@ -10,5 +10,5 @@ Modular subpackages:
 - api: Flask endpoints
 """
 
-__version__ = "5.0"
+__version__ = "6.0"
 __author__ = "HomelinkWG"

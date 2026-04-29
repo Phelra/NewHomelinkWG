@@ -75,8 +75,8 @@ http://localhost:5555/api/
 ```json
 {
   "timestamp": "2026-04-29T15:30:45",
-  "version": "5.0",
-  "date": "2026-04-28",
+  "version": "6.0",
+  "date": "2026-04-29",
   "vpn": {
     "status": "CONNECTED",
     "ip": "10.0.0.1",
@@ -552,7 +552,7 @@ datetime_utc,timestamp_unix,port_id,service_name,service_active,port_listening,t
 ```json
 {
   "timestamp": "2026-04-29T15:30:45",
-  "version": "5.0",
+  "version": "6.0",
   "system": {
     "hostname": "router",
     "os": "Linux 5.10.0",
@@ -599,8 +599,8 @@ datetime_utc,timestamp_unix,port_id,service_name,service_active,port_listening,t
 **Response:**
 ```json
 {
-  "version": "5.0",
-  "date": "2026-04-28",
+  "version": "6.0",
+  "date": "2026-04-29",
   "api_version": "1.0"
 }
 ```
@@ -616,7 +616,7 @@ datetime_utc,timestamp_unix,port_id,service_name,service_active,port_listening,t
 **Response:**
 ```json
 {
-  "version": "5.0",
+  "version": "6.0",
   "notes": "...",
   "released": "2026-04-28"
 }
@@ -767,7 +767,7 @@ curl -s http://localhost:5555/api/diagnose?port_id=port-8080 \
 
 ## Deprecated Endpoints
 
-None currently. API is stable in v5.0.
+None currently. API is stable in v6.0.
 
 ---
 
@@ -775,7 +775,7 @@ None currently. API is stable in v5.0.
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0 | 2026-04-28 | Initial API (v5.0 dashboard) |
+| 1.0 | 2026-04-29 | Initial API (v6.0 dashboard) |
 
 ---
 

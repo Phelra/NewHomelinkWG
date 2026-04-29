@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HomelinkWG dashboard v5.0.
+"""HomelinkWG dashboard v6.0.
 
 A small Flask app that reports the status of the WireGuard tunnel and of each
 socat port-forward defined in ``config.json``. Optionally provides 24-hour
@@ -74,8 +74,8 @@ from homelinkwg.analytics import (
     store_metric, detect_incidents, collector_health, _start_analytics_runtime
 )
 
-__version__ = "5.0"
-__date__ = "2026-04-28"
+__version__ = "6.0"
+__date__ = "2026-04-29"
 
 # Instantiate global rate limiters
 login_limiter = LoginLimiter()

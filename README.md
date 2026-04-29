@@ -1,4 +1,4 @@
-# HomelinkWG v5.0
+# HomelinkWG v6.0
 
 Expose remote services (Jellyfin, NAS, etc.) sitting behind a WireGuard VPN
 through local TCP ports. Ships with two deployment paths: a native
