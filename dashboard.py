@@ -73,6 +73,7 @@ from homelinkwg.auth import (
 from homelinkwg.analytics import (
     store_metric, detect_incidents, collector_health, _start_analytics_runtime
 )
+from homelinkwg.probes import _collect_metrics_once
 
 __version__ = "6.0"
 __date__ = "2026-04-29"
@@ -1884,7 +1885,7 @@ def add_cache_headers(response):
 
 # Initialize authentication & database
 load_auth_config()
-_start_analytics_runtime()
+_start_analytics_runtime(_collect_metrics_once)
 class CacheStore:
     """Simple TTL-based cache for expensive queries."""
     def __init__(self, ttl_seconds: int = 5):
